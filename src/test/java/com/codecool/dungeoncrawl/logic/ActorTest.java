@@ -7,7 +7,11 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ActorTest {
+<<<<<<< HEAD
     GameMap gameMap = new GameMap(3, 3, CellType.FLOOR);
+=======
+    GameMap gameMap = new GameMap(3, 3, CellType.FLOOR, 1);
+>>>>>>> old-project/development
 
     @Test
     void moveUpdatesCells() {
