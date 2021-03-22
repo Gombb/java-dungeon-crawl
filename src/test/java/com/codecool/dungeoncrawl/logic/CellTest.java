@@ -5,12 +5,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CellTest {
-<<<<<<< HEAD
-    GameMap map = new GameMap(3, 3, CellType.FLOOR);
-=======
-    GameMap map = new GameMap(3, 3, CellType.FLOOR, 1);
->>>>>>> old-project/development
 
+    GameMap map = new GameMap(3, 3, CellType.FLOOR, 1);
     @Test
     void getNeighbor() {
         Cell cell = map.getCell(1, 1);
