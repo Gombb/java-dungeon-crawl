@@ -7,16 +7,9 @@ import com.codecool.dungeoncrawl.logic.MapLoader;
 import com.codecool.dungeoncrawl.logic.actors.Player;
 import javafx.application.Application;
 import com.codecool.dungeoncrawl.logic.*;
-import com.codecool.dungeoncrawl.logic.actors.Actor;
-import com.codecool.dungeoncrawl.logic.actors.Player;
 import com.codecool.dungeoncrawl.logic.items.*;
-import com.codecool.dungeoncrawl.logic.actors.Skeleton;
-import com.codecool.dungeoncrawl.logic.Cell;
-import javafx.application.Application;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -33,11 +26,9 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.sql.SQLException;
 import javafx.scene.text.Text;
-import javafx.stage.Popup;
-import javafx.stage.Stage;
 
 
-public class Main extends Application {
+    public class Main extends Application {
     GameMap map = MapLoader.loadMap(1);
     Move move = new Move(map);
     Canvas canvas = new Canvas(
@@ -129,6 +120,8 @@ public class Main extends Application {
         grid.add(nameLabel, 0, 0);
         grid.add(saveButton, 0, 1);
         grid.add(cancelButton,1, 1);
+        saveButton.setOnAction(event -> initSave());
+        cancelButton.setOnAction(event -> dialog.close());
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setAlignment(Pos.CENTER);
         grid.setVgap(50);
@@ -139,6 +132,11 @@ public class Main extends Application {
         dialog.setScene(saveScene);
         dialog.showAndWait();
 
+
+    }
+
+    private void initSave(){
+        
     }
 
     private String getUserInput(TextField textField, Canvas canvas) {
@@ -158,6 +156,7 @@ public class Main extends Application {
             refresh();
         }
     }
+
     public void loadNextLevel(int level){
         this.map = MapLoader.loadMap(level);
         this.move = new Move(this.map);
