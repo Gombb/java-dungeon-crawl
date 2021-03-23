@@ -21,6 +21,8 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -120,7 +122,7 @@ import javafx.scene.text.Text;
         grid.add(nameLabel, 0, 0);
         grid.add(saveButton, 0, 1);
         grid.add(cancelButton,1, 1);
-        saveButton.setOnAction(event -> initSave());
+        saveButton.setOnAction(event -> saveOverWriteAlert());
         cancelButton.setOnAction(event -> dialog.close());
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setAlignment(Pos.CENTER);
@@ -135,8 +137,24 @@ import javafx.scene.text.Text;
 
     }
 
-    private void initSave(){
-        
+    private void saveOverWriteAlert(){
+        boolean overWrite = true;
+        if (overWrite){
+            Alert overWriteAlert = new Alert(Alert.AlertType.WARNING);
+            overWriteAlert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+            overWriteAlert.setContentText("Would you like to overwrite  the already existing state?");
+            ButtonType yesButton = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
+            ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.OK_DONE);
+            overWriteAlert.getButtonTypes().setAll(yesButton, noButton);
+            overWriteAlert.showAndWait().ifPresent(type -> {
+                if (type == yesButton) {
+                    System.out.println("YESYES");
+                }else{
+                    System.out.println("NONONO");
+                }
+            });
+
+        }
     }
 
     private String getUserInput(TextField textField, Canvas canvas) {
