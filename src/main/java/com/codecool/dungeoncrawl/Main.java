@@ -29,12 +29,16 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import java.sql.SQLException;
+import java.util.Optional;
+
 import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 
 
 public class Main extends Application {
+    Alert gameStart = new Alert(Alert.AlertType.CONFIRMATION);
+    TextInputDialog enterName = new TextInputDialog();
     GameMap map = MapLoader.loadMap(1);
     Move move = new Move(map);
     Canvas canvas = new Canvas(
@@ -50,6 +54,9 @@ public class Main extends Application {
     Alert inventory = new Alert(Alert.AlertType.INFORMATION);
     Alert gameOver = new Alert(Alert.AlertType.WARNING);
     TextField console = new TextField();
+    ButtonType newGame = new ButtonType("New game");
+    ButtonType loadGame = new ButtonType("Load game");
+    ButtonType buttonTypeCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 
 
     public static void main(String[] args) {
@@ -60,6 +67,17 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         setupDbManager();
         GridPane ui = new GridPane();
+
+        enterName.setContentText("Please enter your name: ");
+        enterName.setTitle(null);
+        gameStart.setTitle("Welcome to dungeon crawler!");
+        gameStart.getButtonTypes().setAll(newGame, loadGame, buttonTypeCancel);
+
+        enterName.setHeaderText(null);
+        enterName.setGraphic(null);
+        gameStart.setHeaderText(null);
+        gameStart.setGraphic(null);
+
 
         inventory.setHeaderText(null);
         inventory.setTitle("Inventory");
@@ -94,9 +112,20 @@ public class Main extends Application {
         refresh();
         scene.setOnKeyPressed(this::onKeyPressed);
         scene.setOnKeyReleased(this::onKeyReleased);
-
         primaryStage.setTitle("Dungeon Crawl");
-        primaryStage.show();
+
+        Optional<ButtonType> startResult = gameStart.showAndWait();
+        if (startResult.get() == newGame){
+            Optional<String> nameResult = enterName.showAndWait();
+            if (nameResult.isPresent()){
+                System.out.println("Your name: " + nameResult.get());
+                primaryStage.show();
+            }
+        } else if (startResult.get() == loadGame) {
+            System.out.println("Load file");
+        } else {
+            gameStart.close();
+        }
     }
 
     private void onKeyReleased(KeyEvent keyEvent) {
