@@ -27,7 +27,10 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.io.File;
 import java.sql.SQLException;
 import java.util.Optional;
 
@@ -54,6 +57,7 @@ public class Main extends Application {
     TextField console = new TextField();
     ButtonType newGame = new ButtonType("New game");
     ButtonType loadGame = new ButtonType("Load game");
+    FileChooser fileChooser = new FileChooser();
 
     public static void main(String[] args) {
         launch(args);
@@ -125,9 +129,11 @@ public class Main extends Application {
                     gameLoaded = true;
                 }
             } else if (startResult.isPresent() && startResult.get() == loadGame){
-                System.out.println("Load file");
-                primaryStage.show();
-                gameLoaded = true;
+                File file = fileChooser.showOpenDialog(primaryStage);
+                if (file != null) {
+                    primaryStage.show();
+                    gameLoaded = true;
+                }
             }
         }
     }
