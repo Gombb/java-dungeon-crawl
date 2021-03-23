@@ -32,8 +32,6 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 import javafx.scene.text.Text;
-import javafx.stage.Popup;
-import javafx.stage.Stage;
 
 
 public class Main extends Application {
@@ -56,8 +54,6 @@ public class Main extends Application {
     TextField console = new TextField();
     ButtonType newGame = new ButtonType("New game");
     ButtonType loadGame = new ButtonType("Load game");
-    ButtonType buttonTypeCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-
 
     public static void main(String[] args) {
         launch(args);
@@ -71,7 +67,7 @@ public class Main extends Application {
         enterName.setContentText("Please enter your name: ");
         enterName.setTitle(null);
         gameStart.setTitle("Welcome to dungeon crawler!");
-        gameStart.getButtonTypes().setAll(newGame, loadGame, buttonTypeCancel);
+        gameStart.getButtonTypes().setAll(newGame, loadGame);
 
         enterName.setHeaderText(null);
         enterName.setGraphic(null);
@@ -114,17 +110,25 @@ public class Main extends Application {
         scene.setOnKeyReleased(this::onKeyReleased);
         primaryStage.setTitle("Dungeon Crawl");
 
-        Optional<ButtonType> startResult = gameStart.showAndWait();
-        if (startResult.get() == newGame){
-            Optional<String> nameResult = enterName.showAndWait();
-            if (nameResult.isPresent()){
-                System.out.println("Your name: " + nameResult.get());
+        onGameStart(primaryStage);
+    }
+
+    private void onGameStart(Stage primaryStage) {
+        boolean gameLoaded = false;
+        while (!gameLoaded) {
+            Optional<ButtonType> startResult = gameStart.showAndWait();
+            if (startResult.isPresent() && startResult.get() == newGame){
+                Optional<String> nameResult = enterName.showAndWait();
+                if (nameResult.isPresent()){
+                    System.out.println("Your name: " + nameResult.get());
+                    primaryStage.show();
+                    gameLoaded = true;
+                }
+            } else if (startResult.isPresent() && startResult.get() == loadGame){
+                System.out.println("Load file");
                 primaryStage.show();
+                gameLoaded = true;
             }
-        } else if (startResult.get() == loadGame) {
-            System.out.println("Load file");
-        } else {
-            gameStart.close();
         }
     }
 
