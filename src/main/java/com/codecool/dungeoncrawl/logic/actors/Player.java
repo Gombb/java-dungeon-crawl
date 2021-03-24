@@ -13,6 +13,7 @@ public class Player extends Actor {
     ArrayList<Item> inventory = new ArrayList<>();
     private boolean hasKey;
     private boolean wallhack;
+    private String characterName;
 
     public Player(Cell cell) {
         super(cell);
@@ -41,6 +42,14 @@ public class Player extends Actor {
         inventory.add(item);
         useItem(item);
         if (item instanceof Key) setHasKey(true);
+    }
+
+    public String getCharacterName() {
+        return characterName;
+    }
+
+    public void setCharacterName(String characterName) {
+        this.characterName = characterName;
     }
 
     public void useItem(Item item) {

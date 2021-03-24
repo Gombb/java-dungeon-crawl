@@ -5,6 +5,7 @@ import com.codecool.dungeoncrawl.logic.Cell;
 import com.codecool.dungeoncrawl.logic.GameMap;
 import com.codecool.dungeoncrawl.logic.MapLoader;
 import com.codecool.dungeoncrawl.logic.actors.Player;
+import com.codecool.dungeoncrawl.model.PlayerModel;
 import javafx.application.Application;
 import com.codecool.dungeoncrawl.logic.*;
 import com.codecool.dungeoncrawl.logic.items.*;
@@ -71,7 +72,6 @@ public class Main extends Application {
         initButtonCollections();
         initLabelCollection();
         initAlertCollection();
-        modifyUIElements();
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(canvas);
         borderPane.setRight(initUI());
@@ -157,9 +157,8 @@ public class Main extends Application {
         return ui;
     }
 
-
-    private void modifyUIElements() {
-
+    private void saveNewPlayer() {
+        dbManager.savePlayer(map.getPlayer());
     }
 
     private void onGameStart(Stage primaryStage) {
@@ -169,7 +168,8 @@ public class Main extends Application {
             if (startResult.isPresent() && startResult.get() == buttonTypesCollection.get("newGameBtn")){
                 Optional<String> nameResult = enterName.showAndWait();
                 if (nameResult.isPresent()){
-                    System.out.println("Your name: " + nameResult.get());
+                    map.getPlayer().setCharacterName(nameResult.get());
+                    saveNewPlayer();
                     primaryStage.show();
                     gameLoaded = true;
                 }
