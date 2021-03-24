@@ -49,13 +49,11 @@ public class Main extends Application {
             map.getHeight() * Tiles.TILE_WIDTH);
     GraphicsContext context = canvas.getGraphicsContext2D();
     GameDatabaseManager dbManager;
+
     HashMap<String, Button> buttonsCollection = new HashMap<>();
     HashMap<String, ButtonType> buttonTypesCollection = new HashMap<>();
+    HashMap<String, Label> labelCollection = new HashMap<>();
 
-    Label healthLabel = new Label();
-    Label attackLabel = new Label();
-    Label defenseLabel = new Label();
-    Text combatLog = new Text();
     Alert inventory = new Alert(Alert.AlertType.INFORMATION);
     Alert gameOver = new Alert(Alert.AlertType.WARNING);
     Alert wrongFileType = new Alert(Alert.AlertType.CONFIRMATION);
@@ -68,8 +66,13 @@ public class Main extends Application {
         launch(args);
     }
 
+    private void initLabelCollections(){
+        labelCollection.put("attackLabel", new Label());
+        labelCollection.put("defenseLabel", new Label());
+        labelCollection.put("healthLabel", new Label());
+    }
 
-    private void initButtonSetS() {
+    private void initButtonCollections() {
         buttonsCollection.put("pickUpBtn", new Button("Loot"));
         buttonsCollection.put("importGameBtn", new Button("Import"));
         buttonsCollection.put("exportGameBtn", new Button("Export"));
@@ -83,7 +86,8 @@ public class Main extends Application {
         setupDbManager();
         GridPane ui = new GridPane();
         this.primaryStage = primaryStage;
-        initButtonSetS();
+        initButtonCollections();
+        initLabelCollections();
         modifyUIElements();
 
         ui.setPrefWidth(200);
@@ -93,14 +97,13 @@ public class Main extends Application {
         ui.add(console, 0, 1);
 
         ui.add(new Label("Health: "), 0, 2);
-        ui.add(healthLabel, 1, 2);
+        ui.add(labelCollection.get("healthLabel"), 1, 2);
 
         ui.add(new Label("Attack: "), 0, 3);
-        ui.add(attackLabel, 1, 3);
+        ui.add(labelCollection.get("attackLabel"), 1, 3);
 
         ui.add(new Label("Defense: "), 0, 4);
-        ui.add(defenseLabel, 1, 4);
-        ui.add(combatLog, 0, 5);
+        ui.add(labelCollection.get("defenseLabel"), 1, 4);
         ui.add(buttonsCollection.get("importGameBtn"), 1, 5);
         ui.add(buttonsCollection.get("exportGameBtn"), 0, 5);
 
@@ -350,7 +353,10 @@ public class Main extends Application {
                 }
             }
         }
-        healthLabel.setText("" + map.getPlayer().getHealth());
+        labelCollection.get("healthLabel").setText("" + map.getPlayer().getHealth());
+        labelCollection.get("attackLabel").setText("" + map.getPlayer().getAttack());
+        labelCollection.get("defenseLabel").setText("" + map.getPlayer().getDefense());
+        inventory.setContentText(map.getPlayer().displayInventory());
     }
 
     private void setupDbManager() {
@@ -359,9 +365,7 @@ public class Main extends Application {
             dbManager.setup();
         } catch (SQLException ex) {
             System.out.println("Cannot connect to database.");
-        }attackLabel.setText("" + map.getPlayer().getAttack());
-        defenseLabel.setText("" + map.getPlayer().getDefense());
-        inventory.setContentText(map.getPlayer().displayInventory());
+        }
     }
     
     private void exit() {
@@ -371,7 +375,5 @@ public class Main extends Application {
             System.exit(1);
         }
         System.exit(0);
-        attackLabel.setText("" + map.getPlayer().getAttack());
-        defenseLabel.setText("" + map.getPlayer().getDefense());
-        inventory.setContentText(map.getPlayer().displayInventory());    }
+    }
 }
