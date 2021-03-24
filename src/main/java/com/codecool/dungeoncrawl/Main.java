@@ -133,8 +133,6 @@ import javafx.scene.text.Text;
         dialog.setTitle("Save menu");
         dialog.setScene(saveScene);
         dialog.showAndWait();
-
-
     }
 
     private void saveOverWriteAlert(){
@@ -153,7 +151,6 @@ import javafx.scene.text.Text;
                     System.out.println("NONONO");
                 }
             });
-
         }
     }
 
