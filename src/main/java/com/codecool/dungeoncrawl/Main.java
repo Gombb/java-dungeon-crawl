@@ -7,14 +7,9 @@ import com.codecool.dungeoncrawl.logic.MapLoader;
 import com.codecool.dungeoncrawl.logic.actors.Player;
 import javafx.application.Application;
 import com.codecool.dungeoncrawl.logic.*;
-import com.codecool.dungeoncrawl.logic.actors.Actor;
-import com.codecool.dungeoncrawl.logic.actors.Player;
 import com.codecool.dungeoncrawl.logic.items.*;
-import com.codecool.dungeoncrawl.logic.actors.Skeleton;
-import com.codecool.dungeoncrawl.logic.Cell;
-import javafx.application.Application;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -26,18 +21,24 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.Optional;
+
 import javafx.scene.text.Text;
-import javafx.stage.Popup;
-import javafx.stage.Stage;
 
 
 public class Main extends Application {
+    Alert gameStart = new Alert(Alert.AlertType.CONFIRMATION);
+    TextInputDialog enterName = new TextInputDialog();
+
     GameMap map = MapLoader.loadMap(1);
     Move move = new Move(map);
     Canvas canvas = new Canvas(
@@ -54,7 +55,12 @@ public class Main extends Application {
     Alert inventory = new Alert(Alert.AlertType.INFORMATION);
     Alert gameOver = new Alert(Alert.AlertType.WARNING);
     TextField console = new TextField();
+
+    ButtonType newGame = new ButtonType("New game");
+    ButtonType loadGame = new ButtonType("Load game");
     FileChooser fileChooser = new FileChooser();
+
+    Stage primaryStage;
 
 
     public static void main(String[] args) {
@@ -66,6 +72,18 @@ public class Main extends Application {
         setupDbManager();
         GridPane ui = new GridPane();
 
+        enterName.setContentText("Please enter your name: ");
+        enterName.setTitle(null);
+        gameStart.setTitle("Welcome to dungeon crawler!");
+        gameStart.getButtonTypes().setAll(newGame, loadGame);
+
+        enterName.setHeaderText(null);
+        enterName.setGraphic(null);
+        gameStart.setHeaderText(null);
+        gameStart.setGraphic(null);
+
+        this.primaryStage = primaryStage;
+      
         inventory.setHeaderText(null);
         inventory.setTitle("Inventory");
         gameOver.setHeaderText("WASTED");
@@ -100,21 +118,92 @@ public class Main extends Application {
         refresh();
         scene.setOnKeyPressed(this::onKeyPressed);
         scene.setOnKeyReleased(this::onKeyReleased);
+      
         exportGameBtn.setOnAction(e -> {
             File file = fileChooser.showSaveDialog(primaryStage);
         });
 
         primaryStage.setTitle("Dungeon Crawl");
-        primaryStage.show();
+
+        onGameStart(primaryStage);
+    }
+
+    private void onGameStart(Stage primaryStage) {
+        boolean gameLoaded = false;
+        while (!gameLoaded) {
+            Optional<ButtonType> startResult = gameStart.showAndWait();
+            if (startResult.isPresent() && startResult.get() == newGame){
+                Optional<String> nameResult = enterName.showAndWait();
+                if (nameResult.isPresent()){
+                    System.out.println("Your name: " + nameResult.get());
+                    primaryStage.show();
+                    gameLoaded = true;
+                }
+            } else if (startResult.isPresent() && startResult.get() == loadGame){
+                File file = fileChooser.showOpenDialog(primaryStage);
+                if (file != null) {
+                    primaryStage.show();
+                    gameLoaded = true;
+                }
+            }
+        }
     }
 
     private void onKeyReleased(KeyEvent keyEvent) {
         KeyCombination exitCombinationMac = new KeyCodeCombination(KeyCode.W, KeyCombination.SHORTCUT_DOWN);
         KeyCombination exitCombinationWin = new KeyCodeCombination(KeyCode.F4, KeyCombination.ALT_DOWN);
+        KeyCombination saveCombination = new KeyCodeCombination(KeyCode.S, KeyCombination.ALT_DOWN);
         if (exitCombinationMac.match(keyEvent)
                 || exitCombinationWin.match(keyEvent)
                 || keyEvent.getCode() == KeyCode.ESCAPE) {
             exit();
+        }
+        if (saveCombination.match(keyEvent)) saveModal();
+
+    }
+
+    private void saveModal(){
+        Button saveButton = new Button("Save");
+        Button cancelButton = new Button("Cancel");
+        TextField saveInput = new TextField();
+        Text nameLabel = new Text("Name:");
+        saveInput.setPrefSize(150, 25);
+        Stage dialog = new Stage();
+        GridPane grid = new GridPane();
+        Scene saveScene = new Scene(grid, 300, 250, Color.BLACK);
+        grid.add(saveInput, 1, 0);
+        grid.add(nameLabel, 0, 0);
+        grid.add(saveButton, 0, 1);
+        grid.add(cancelButton,1, 1);
+        saveButton.setOnAction(event -> saveOverWriteAlert());
+        cancelButton.setOnAction(event -> dialog.close());
+        grid.setPadding(new Insets(10, 10, 10, 10));
+        grid.setAlignment(Pos.CENTER);
+        grid.setVgap(50);
+        grid.setHgap(5);
+        dialog.initOwner(primaryStage);
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.setTitle("Save menu");
+        dialog.setScene(saveScene);
+        dialog.showAndWait();
+    }
+
+    private void saveOverWriteAlert(){
+        boolean overWrite = true;
+        if (overWrite){
+            Alert overWriteAlert = new Alert(Alert.AlertType.WARNING);
+            overWriteAlert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+            overWriteAlert.setContentText("Would you like to overwrite  the already existing state?");
+            ButtonType yesButton = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
+            ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.OK_DONE);
+            overWriteAlert.getButtonTypes().setAll(yesButton, noButton);
+            overWriteAlert.showAndWait().ifPresent(type -> {
+                if (type == yesButton) {
+                    System.out.println("YESYES");
+                }else{
+                    System.out.println("NONONO");
+                }
+            });
         }
     }
 
@@ -135,6 +224,7 @@ public class Main extends Application {
             refresh();
         }
     }
+
     public void loadNextLevel(int level){
         this.map = MapLoader.loadMap(level);
         this.move = new Move(this.map);
