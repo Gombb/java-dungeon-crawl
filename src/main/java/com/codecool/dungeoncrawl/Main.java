@@ -26,9 +26,16 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Optional;
+
 import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
@@ -43,13 +50,16 @@ public class Main extends Application {
     GraphicsContext context = canvas.getGraphicsContext2D();
     GameDatabaseManager dbManager;
     Button pickUpBtn = new Button("Loot");
+    Button importGameBtn = new Button("import");
     Label healthLabel = new Label();
     Label attackLabel = new Label();
     Label defenseLabel = new Label();
     Text combatLog = new Text();
     Alert inventory = new Alert(Alert.AlertType.INFORMATION);
     Alert gameOver = new Alert(Alert.AlertType.WARNING);
+    Alert wrongFileType = new Alert(Alert.AlertType.CONFIRMATION);
     TextField console = new TextField();
+    FileChooser fileChooser = new FileChooser();
 
 
     public static void main(String[] args) {
@@ -65,6 +75,10 @@ public class Main extends Application {
         inventory.setTitle("Inventory");
         gameOver.setHeaderText("WASTED");
         gameOver.setTitle("GameOver");
+        wrongFileType.setHeaderText(null);
+        wrongFileType.setTitle("Incorrect file type");
+        wrongFileType.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        wrongFileType.setContentText("IMPORT ERROR! Unfortunately the given file is in wrong format. Please try another one!");
 
         ui.setPrefWidth(200);
         ui.setPadding(new Insets(10));
@@ -82,6 +96,7 @@ public class Main extends Application {
         ui.add(new Label("Defense: "), 0, 4);
         ui.add(defenseLabel, 1, 4);
         ui.add(combatLog, 0, 5);
+        ui.add(importGameBtn, 1, 6);
         ui.setStyle("-fx-background-color: #f26252;");
 
         BorderPane borderPane = new BorderPane();
@@ -94,9 +109,40 @@ public class Main extends Application {
         refresh();
         scene.setOnKeyPressed(this::onKeyPressed);
         scene.setOnKeyReleased(this::onKeyReleased);
+        importGameBtn.setOnAction(e -> {
+            try {
+                importGameState(primaryStage);
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        });
 
         primaryStage.setTitle("Dungeon Crawl");
         primaryStage.show();
+    }
+
+    private void importGameState(Stage primaryStage) throws IOException {
+        boolean returnToGame = false;
+        while (!returnToGame) {
+            File file = fileChooser.showOpenDialog(primaryStage);
+            if (file != null && file.getCanonicalPath().endsWith(".json")) {
+                // TODO if there is a file selected load it
+                returnToGame = true;
+                primaryStage.show();
+            } else if (file == null) {
+                // if there are no files selected return to game
+                returnToGame = true;
+                primaryStage.show();
+            } else {
+                Optional<ButtonType> result = wrongFileType.showAndWait();
+                if (result.get().getText().equals("OK")) {
+                    wrongFileType.close();
+                } else {
+                    returnToGame = true;
+                    wrongFileType.close();
+                }
+            }
+        }
     }
 
     private void onKeyReleased(KeyEvent keyEvent) {
