@@ -14,6 +14,7 @@ public class Player extends Actor {
     private boolean hasKey;
     private boolean wallhack;
     private String characterName;
+    private int id;
 
     public Player(Cell cell) {
         super(cell);
@@ -26,6 +27,7 @@ public class Player extends Actor {
     public String getTileName() {
         return "player";
     }
+
     public void setHasKey(boolean hasKey) {
         this.hasKey = true;
     }
@@ -50,6 +52,14 @@ public class Player extends Actor {
 
     public void setCharacterName(String characterName) {
         this.characterName = characterName;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public void useItem(Item item) {

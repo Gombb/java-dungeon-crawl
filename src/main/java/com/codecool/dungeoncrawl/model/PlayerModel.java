@@ -9,6 +9,7 @@ public class PlayerModel extends BaseModel {
     private int defense;
     private int x;
     private int y;
+    private int id;
 
    /* public PlayerModel(String playerName, int x, int y) {
         this.playerName = playerName;
@@ -21,7 +22,9 @@ public class PlayerModel extends BaseModel {
         this.playerName = player.getCharacterName();
         this.x = player.getX();
         this.y = player.getY();
-
+        this.attack = player.getAttack();
+        this.defense = player.getDefense();
+        this.id = player.getId();
         this.hp = player.getHealth();
     }
 
