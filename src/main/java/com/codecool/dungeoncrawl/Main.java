@@ -24,13 +24,22 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
+
 import javafx.stage.Stage;
+
+import java.io.File;
 import java.sql.SQLException;
+import java.util.Optional;
+
 import javafx.scene.text.Text;
 
 
-    public class Main extends Application {
+public class Main extends Application {
+    Alert gameStart = new Alert(Alert.AlertType.CONFIRMATION);
+    TextInputDialog enterName = new TextInputDialog();
+
     GameMap map = MapLoader.loadMap(1);
     Move move = new Move(map);
     Canvas canvas = new Canvas(
@@ -46,6 +55,11 @@ import javafx.scene.text.Text;
     Alert inventory = new Alert(Alert.AlertType.INFORMATION);
     Alert gameOver = new Alert(Alert.AlertType.WARNING);
     TextField console = new TextField();
+  
+    ButtonType newGame = new ButtonType("New game");
+    ButtonType loadGame = new ButtonType("Load game");
+    FileChooser fileChooser = new FileChooser();
+
     Stage primaryStage;
 
 
@@ -57,7 +71,19 @@ import javafx.scene.text.Text;
     public void start(Stage primaryStage) throws Exception {
         setupDbManager();
         GridPane ui = new GridPane();
+
+        enterName.setContentText("Please enter your name: ");
+        enterName.setTitle(null);
+        gameStart.setTitle("Welcome to dungeon crawler!");
+        gameStart.getButtonTypes().setAll(newGame, loadGame);
+
+        enterName.setHeaderText(null);
+        enterName.setGraphic(null);
+        gameStart.setHeaderText(null);
+        gameStart.setGraphic(null);
+
         this.primaryStage = primaryStage;
+      
         inventory.setHeaderText(null);
         inventory.setTitle("Inventory");
         gameOver.setHeaderText("WASTED");
@@ -91,9 +117,30 @@ import javafx.scene.text.Text;
         refresh();
         scene.setOnKeyPressed(this::onKeyPressed);
         scene.setOnKeyReleased(this::onKeyReleased);
-
         primaryStage.setTitle("Dungeon Crawl");
-        primaryStage.show();
+
+        onGameStart(primaryStage);
+    }
+
+    private void onGameStart(Stage primaryStage) {
+        boolean gameLoaded = false;
+        while (!gameLoaded) {
+            Optional<ButtonType> startResult = gameStart.showAndWait();
+            if (startResult.isPresent() && startResult.get() == newGame){
+                Optional<String> nameResult = enterName.showAndWait();
+                if (nameResult.isPresent()){
+                    System.out.println("Your name: " + nameResult.get());
+                    primaryStage.show();
+                    gameLoaded = true;
+                }
+            } else if (startResult.isPresent() && startResult.get() == loadGame){
+                File file = fileChooser.showOpenDialog(primaryStage);
+                if (file != null) {
+                    primaryStage.show();
+                    gameLoaded = true;
+                }
+            }
+        }
     }
 
     private void onKeyReleased(KeyEvent keyEvent) {
