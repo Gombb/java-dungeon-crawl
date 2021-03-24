@@ -25,15 +25,15 @@ import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import java.io.File;
 import java.io.IOException;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import javafx.scene.text.Text;
 
@@ -49,9 +49,8 @@ public class Main extends Application {
             map.getHeight() * Tiles.TILE_WIDTH);
     GraphicsContext context = canvas.getGraphicsContext2D();
     GameDatabaseManager dbManager;
-    Button pickUpBtn = new Button("Loot");
-    Button importGameBtn = new Button("import");
-    Button exportGameBtn = new Button("Export");
+    HashMap<String, Button> buttonsCollection = new HashMap<>();
+    HashMap<String, ButtonType> buttonTypesCollection = new HashMap<>();
 
     Label healthLabel = new Label();
     Label attackLabel = new Label();
@@ -62,9 +61,6 @@ public class Main extends Application {
     Alert wrongFileType = new Alert(Alert.AlertType.CONFIRMATION);
     TextField console = new TextField();
     FileChooser fileChooser = new FileChooser();
-
-    ButtonType newGame = new ButtonType("New game");
-    ButtonType loadGame = new ButtonType("Load game");
     Stage primaryStage;
 
 
@@ -72,37 +68,28 @@ public class Main extends Application {
         launch(args);
     }
 
+
+    private void initButtonSetS() {
+        buttonsCollection.put("pickUpBtn", new Button("Loot"));
+        buttonsCollection.put("importGameBtn", new Button("Import"));
+        buttonsCollection.put("exportGameBtn", new Button("Export"));
+        buttonTypesCollection.put("newGameBtn", new ButtonType("New Game"));
+        buttonTypesCollection.put("loadGameBtn", new ButtonType("Load Game"));
+    }
+
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         setupDbManager();
         GridPane ui = new GridPane();
-
-        enterName.setContentText("Please enter your name: ");
-        enterName.setTitle(null);
-        gameStart.setTitle("Welcome to dungeon crawler!");
-        gameStart.getButtonTypes().setAll(newGame, loadGame);
-
-        enterName.setHeaderText(null);
-        enterName.setGraphic(null);
-        gameStart.setHeaderText(null);
-        gameStart.setGraphic(null);
-
         this.primaryStage = primaryStage;
-      
-        inventory.setHeaderText(null);
-        inventory.setTitle("Inventory");
-        gameOver.setHeaderText("WASTED");
-        gameOver.setTitle("GameOver");
-        wrongFileType.setHeaderText(null);
-        wrongFileType.setTitle("Incorrect file type");
-        wrongFileType.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-        wrongFileType.setContentText("IMPORT ERROR! Unfortunately the given file is in wrong format. Please try another one!");
+        initButtonSetS();
+        modifyUIElements();
 
         ui.setPrefWidth(200);
         ui.setPadding(new Insets(10));
 
-        ui.add(pickUpBtn, 0, 0);
-        console.setMaxWidth(100);
+        ui.add(buttonsCollection.get("pickUpBtn"), 0, 0);
         ui.add(console, 0, 1);
 
         ui.add(new Label("Health: "), 0, 2);
@@ -114,8 +101,8 @@ public class Main extends Application {
         ui.add(new Label("Defense: "), 0, 4);
         ui.add(defenseLabel, 1, 4);
         ui.add(combatLog, 0, 5);
-        ui.add(importGameBtn, 1, 5);
-        ui.add(exportGameBtn, 0, 5);
+        ui.add(buttonsCollection.get("importGameBtn"), 1, 5);
+        ui.add(buttonsCollection.get("exportGameBtn"), 0, 5);
 
         ui.setStyle("-fx-background-color: #f26252;");
 
@@ -130,14 +117,14 @@ public class Main extends Application {
         scene.setOnKeyPressed(this::onKeyPressed);
         scene.setOnKeyReleased(this::onKeyReleased);
       
-        importGameBtn.setOnAction(e -> {
+        buttonsCollection.get("importGameBtn").setOnAction(e -> {
             try {
                 importGameState(primaryStage);
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }});
       
-        exportGameBtn.setOnAction(e -> {
+        buttonsCollection.get("exportGameBtn").setOnAction(e -> {
             File file = fileChooser.showSaveDialog(primaryStage);
         });
 
@@ -146,18 +133,46 @@ public class Main extends Application {
         onGameStart(primaryStage);
     }
 
+    private void modifyUIElements() {
+        enterName.setContentText("Please enter your name: ");
+        enterName.setTitle("Welcome to dungeon crawler!");
+        enterName.setHeaderText(null);
+        enterName.setGraphic(null);
+
+        gameStart.getButtonTypes().setAll(buttonTypesCollection.get("newGameBtn"), buttonTypesCollection.get("loadGameBtn"));
+        gameStart.setHeaderText(null);
+        gameStart.setGraphic(null);
+
+        inventory.setHeaderText(null);
+        inventory.setTitle("Inventory");
+
+        gameOver.setHeaderText("WASTED");
+        gameOver.setTitle("GameOver");
+
+        wrongFileType.setHeaderText(null);
+        wrongFileType.setTitle("Incorrect file type");
+        wrongFileType.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        wrongFileType.setContentText("IMPORT ERROR! Unfortunately the given file is in wrong format. Please try another one!");
+
+        console.setMaxWidth(100);
+    }
+
+    private void modifyUI() {
+
+    }
+
     private void onGameStart(Stage primaryStage) {
         boolean gameLoaded = false;
         while (!gameLoaded) {
             Optional<ButtonType> startResult = gameStart.showAndWait();
-            if (startResult.isPresent() && startResult.get() == newGame){
+            if (startResult.isPresent() && startResult.get() == buttonTypesCollection.get("newGameBtn")){
                 Optional<String> nameResult = enterName.showAndWait();
                 if (nameResult.isPresent()){
                     System.out.println("Your name: " + nameResult.get());
                     primaryStage.show();
                     gameLoaded = true;
                 }
-            } else if (startResult.isPresent() && startResult.get() == loadGame){
+            } else if (startResult.isPresent() && startResult.get() == buttonTypesCollection.get("loadGameBtn")){
                 File file = fileChooser.showOpenDialog(primaryStage);
                 if (file != null) {
                     primaryStage.show();
@@ -300,7 +315,7 @@ public class Main extends Application {
                 refresh();
                 break;
         }
-        pickUpBtn.setOnAction(event -> onBtnPress(map.getPlayer()));
+        buttonsCollection.get("pickUpBtn").setOnAction(event -> onBtnPress(map.getPlayer()));
         console.setOnAction(event -> {
             map.getPlayer().processCheatCode(getUserInput(console, canvas));
             refresh();}
