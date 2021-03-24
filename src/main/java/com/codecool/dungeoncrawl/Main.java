@@ -26,7 +26,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
-
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -48,6 +47,7 @@ public class Main extends Application {
     GraphicsContext context = canvas.getGraphicsContext2D();
     GameDatabaseManager dbManager;
     Button pickUpBtn = new Button("Loot");
+    Button exportGameBtn = new Button("Export");
     Label healthLabel = new Label();
     Label attackLabel = new Label();
     Label defenseLabel = new Label();
@@ -55,7 +55,7 @@ public class Main extends Application {
     Alert inventory = new Alert(Alert.AlertType.INFORMATION);
     Alert gameOver = new Alert(Alert.AlertType.WARNING);
     TextField console = new TextField();
-  
+
     ButtonType newGame = new ButtonType("New game");
     ButtonType loadGame = new ButtonType("Load game");
     FileChooser fileChooser = new FileChooser();
@@ -105,6 +105,7 @@ public class Main extends Application {
         ui.add(new Label("Defense: "), 0, 4);
         ui.add(defenseLabel, 1, 4);
         ui.add(combatLog, 0, 5);
+        ui.add(exportGameBtn, 0, 5);
         ui.setStyle("-fx-background-color: #f26252;");
 
         BorderPane borderPane = new BorderPane();
@@ -117,6 +118,11 @@ public class Main extends Application {
         refresh();
         scene.setOnKeyPressed(this::onKeyPressed);
         scene.setOnKeyReleased(this::onKeyReleased);
+      
+        exportGameBtn.setOnAction(e -> {
+            File file = fileChooser.showSaveDialog(primaryStage);
+        });
+
         primaryStage.setTitle("Dungeon Crawl");
 
         onGameStart(primaryStage);
