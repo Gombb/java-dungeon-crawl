@@ -55,13 +55,33 @@ public class Main extends Application {
     HashMap<String, Alert> alertCollection;
 
     TextInputDialog enterName = new TextInputDialog();
-    TextField console = new TextField();
+    TextField rightPaneInputField = new TextField();
     FileChooser fileChooser = new FileChooser();
 
 
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        setupDbManager();
+        this.primaryStage = primaryStage;
+        initButtonCollections();
+        initLabelCollection();
+        initAlertCollection();
+        modifyUIElements();
+        BorderPane borderPane = new BorderPane();
+        borderPane.setCenter(canvas);
+        borderPane.setRight(initUI());
+        Scene scene = new Scene(borderPane);
+        scene.setOnKeyPressed(this::onKeyPressed);
+        scene.setOnKeyReleased(this::onKeyReleased);
+        primaryStage.setScene(scene);
+        refresh();
+        primaryStage.setTitle("Dungeon Crawl");
+        onGameStart(primaryStage);
     }
 
     private void initAlertCollection(){
@@ -102,71 +122,44 @@ public class Main extends Application {
         buttonCollection.put("exportGameBtn", new Button("Export"));
         buttonTypesCollection.put("newGameBtn", new ButtonType("New Game"));
         buttonTypesCollection.put("loadGameBtn", new ButtonType("Load Game"));
-    }
-
-
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        setupDbManager();
-        GridPane ui = new GridPane();
-        this.primaryStage = primaryStage;
-        initButtonCollections();
-        initLabelCollection();
-        initAlertCollection();
-        modifyUIElements();
-
-        ui.setPrefWidth(200);
-        ui.setPadding(new Insets(10));
-
-        ui.add(buttonCollection.get("pickUpBtn"), 0, 0);
-        ui.add(console, 0, 1);
-
-        ui.add(new Label("Health: "), 0, 2);
-        ui.add(labelCollection.get("healthLabel"), 1, 2);
-
-        ui.add(new Label("Attack: "), 0, 3);
-        ui.add(labelCollection.get("attackLabel"), 1, 3);
-
-        ui.add(new Label("Defense: "), 0, 4);
-        ui.add(labelCollection.get("defenseLabel"), 1, 4);
-        ui.add(buttonCollection.get("importGameBtn"), 1, 5);
-        ui.add(buttonCollection.get("exportGameBtn"), 0, 5);
-
-        ui.setStyle("-fx-background-color: #f26252;");
-
-        BorderPane borderPane = new BorderPane();
-
-        borderPane.setCenter(canvas);
-        borderPane.setRight(ui);
-
-        Scene scene = new Scene(borderPane);
-        primaryStage.setScene(scene);
-        refresh();
-        scene.setOnKeyPressed(this::onKeyPressed);
-        scene.setOnKeyReleased(this::onKeyReleased);
-      
         buttonCollection.get("importGameBtn").setOnAction(e -> {
             try {
                 importGameState(primaryStage);
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }});
-      
+
         buttonCollection.get("exportGameBtn").setOnAction(e -> {
             File file = fileChooser.showSaveDialog(primaryStage);
         });
-
-        primaryStage.setTitle("Dungeon Crawl");
-
-        onGameStart(primaryStage);
     }
-
-    private void modifyUIElements() {
+    private GridPane initUI() {
+        GridPane ui = new GridPane();
+        ui.setPrefWidth(200);
+        ui.setPadding(new Insets(10));
+        ui.add(buttonCollection.get("pickUpBtn"), 0, 0);
+        ui.add(rightPaneInputField, 0, 1);
+        ui.add(new Label("Health: "), 0, 2);
+        ui.add(labelCollection.get("healthLabel"), 1, 2);
+        ui.add(new Label("Attack: "), 0, 3);
+        ui.add(labelCollection.get("attackLabel"), 1, 3);
+        ui.add(new Label("Defense: "), 0, 4);
+        ui.add(labelCollection.get("defenseLabel"), 1, 4);
+        ui.add(buttonCollection.get("importGameBtn"), 1, 5);
+        ui.add(buttonCollection.get("exportGameBtn"), 0, 5);
+        ui.setStyle("-fx-background-color: #f26252;");
         enterName.setContentText("Please enter your name: ");
         enterName.setTitle("Welcome to dungeon crawler!");
         enterName.setHeaderText(null);
         enterName.setGraphic(null);
-        console.setMaxWidth(100);
+        rightPaneInputField.setMaxWidth(100);
+
+        return ui;
+    }
+
+
+    private void modifyUIElements() {
+
     }
 
     private void onGameStart(Stage primaryStage) {
@@ -275,7 +268,7 @@ public class Main extends Application {
 
     private String getUserInput(TextField textField, Canvas canvas) {
         String userInput = textField.getText();
-        console.clear();
+        rightPaneInputField.clear();
         canvas.requestFocus();
         System.out.println(userInput);
         return userInput;
@@ -325,8 +318,8 @@ public class Main extends Application {
                 break;
         }
         buttonCollection.get("pickUpBtn").setOnAction(event -> onBtnPress(map.getPlayer()));
-        console.setOnAction(event -> {
-            map.getPlayer().processCheatCode(getUserInput(console, canvas));
+        rightPaneInputField.setOnAction(event -> {
+            map.getPlayer().processCheatCode(getUserInput(rightPaneInputField, canvas));
             refresh();}
             );
         if (map.getPlayer().getHealth() < 1){
