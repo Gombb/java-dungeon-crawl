@@ -39,8 +39,6 @@ import javafx.scene.text.Text;
 
 
 public class Main extends Application {
-    Alert gameStart = new Alert(Alert.AlertType.CONFIRMATION);
-    TextInputDialog enterName = new TextInputDialog();
 
     GameMap map = MapLoader.loadMap(1);
     Move move = new Move(map);
@@ -48,34 +46,60 @@ public class Main extends Application {
             map.getWidth() * Tiles.TILE_WIDTH,
             map.getHeight() * Tiles.TILE_WIDTH);
     GraphicsContext context = canvas.getGraphicsContext2D();
+    Stage primaryStage;
     GameDatabaseManager dbManager;
 
-    HashMap<String, Button> buttonsCollection = new HashMap<>();
-    HashMap<String, ButtonType> buttonTypesCollection = new HashMap<>();
-    HashMap<String, Label> labelCollection = new HashMap<>();
+    HashMap<String, Button> buttonCollection;
+    HashMap<String, ButtonType> buttonTypesCollection;
+    HashMap<String, Label> labelCollection;
+    HashMap<String, Alert> alertCollection;
 
-    Alert inventory = new Alert(Alert.AlertType.INFORMATION);
-    Alert gameOver = new Alert(Alert.AlertType.WARNING);
-    Alert wrongFileType = new Alert(Alert.AlertType.CONFIRMATION);
+    TextInputDialog enterName = new TextInputDialog();
     TextField console = new TextField();
     FileChooser fileChooser = new FileChooser();
-    Stage primaryStage;
+
 
 
     public static void main(String[] args) {
         launch(args);
     }
 
-    private void initLabelCollections(){
+    private void initAlertCollection(){
+        this.alertCollection = new HashMap<>();
+        Alert inventory = new Alert(Alert.AlertType.INFORMATION);
+        inventory.setHeaderText(null);
+        inventory.setTitle("Inventory");
+        alertCollection.put("inventory", inventory);
+        Alert gameOver = new Alert(Alert.AlertType.WARNING);
+        gameOver.setHeaderText("WASTED");
+        gameOver.setTitle("GameOver");
+        alertCollection.put("gameOver", gameOver);
+        Alert wrongFileType = new Alert(Alert.AlertType.CONFIRMATION);
+        wrongFileType.setHeaderText(null);
+        wrongFileType.setTitle("Incorrect file type");
+        wrongFileType.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        wrongFileType.setContentText("IMPORT ERROR! Unfortunately the given file is in wrong format. Please try another one!");
+        alertCollection.put("wrongFileType", new Alert(Alert.AlertType.CONFIRMATION));
+        Alert gameStart = new Alert(Alert.AlertType.CONFIRMATION);
+        gameStart.getButtonTypes().setAll(buttonTypesCollection.get("newGameBtn"), buttonTypesCollection.get("loadGameBtn"));
+        gameStart.setHeaderText(null);
+        gameStart.setGraphic(null);
+        alertCollection.put("gameStart", gameStart);
+    }
+
+    private void initLabelCollection(){
+        this.labelCollection = new HashMap<>();
         labelCollection.put("attackLabel", new Label());
         labelCollection.put("defenseLabel", new Label());
         labelCollection.put("healthLabel", new Label());
     }
 
     private void initButtonCollections() {
-        buttonsCollection.put("pickUpBtn", new Button("Loot"));
-        buttonsCollection.put("importGameBtn", new Button("Import"));
-        buttonsCollection.put("exportGameBtn", new Button("Export"));
+        this.buttonCollection = new HashMap<>();
+        this.buttonTypesCollection = new HashMap<>();
+        buttonCollection.put("pickUpBtn", new Button("Loot"));
+        buttonCollection.put("importGameBtn", new Button("Import"));
+        buttonCollection.put("exportGameBtn", new Button("Export"));
         buttonTypesCollection.put("newGameBtn", new ButtonType("New Game"));
         buttonTypesCollection.put("loadGameBtn", new ButtonType("Load Game"));
     }
@@ -87,13 +111,14 @@ public class Main extends Application {
         GridPane ui = new GridPane();
         this.primaryStage = primaryStage;
         initButtonCollections();
-        initLabelCollections();
+        initLabelCollection();
+        initAlertCollection();
         modifyUIElements();
 
         ui.setPrefWidth(200);
         ui.setPadding(new Insets(10));
 
-        ui.add(buttonsCollection.get("pickUpBtn"), 0, 0);
+        ui.add(buttonCollection.get("pickUpBtn"), 0, 0);
         ui.add(console, 0, 1);
 
         ui.add(new Label("Health: "), 0, 2);
@@ -104,8 +129,8 @@ public class Main extends Application {
 
         ui.add(new Label("Defense: "), 0, 4);
         ui.add(labelCollection.get("defenseLabel"), 1, 4);
-        ui.add(buttonsCollection.get("importGameBtn"), 1, 5);
-        ui.add(buttonsCollection.get("exportGameBtn"), 0, 5);
+        ui.add(buttonCollection.get("importGameBtn"), 1, 5);
+        ui.add(buttonCollection.get("exportGameBtn"), 0, 5);
 
         ui.setStyle("-fx-background-color: #f26252;");
 
@@ -120,14 +145,14 @@ public class Main extends Application {
         scene.setOnKeyPressed(this::onKeyPressed);
         scene.setOnKeyReleased(this::onKeyReleased);
       
-        buttonsCollection.get("importGameBtn").setOnAction(e -> {
+        buttonCollection.get("importGameBtn").setOnAction(e -> {
             try {
                 importGameState(primaryStage);
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }});
       
-        buttonsCollection.get("exportGameBtn").setOnAction(e -> {
+        buttonCollection.get("exportGameBtn").setOnAction(e -> {
             File file = fileChooser.showSaveDialog(primaryStage);
         });
 
@@ -141,33 +166,13 @@ public class Main extends Application {
         enterName.setTitle("Welcome to dungeon crawler!");
         enterName.setHeaderText(null);
         enterName.setGraphic(null);
-
-        gameStart.getButtonTypes().setAll(buttonTypesCollection.get("newGameBtn"), buttonTypesCollection.get("loadGameBtn"));
-        gameStart.setHeaderText(null);
-        gameStart.setGraphic(null);
-
-        inventory.setHeaderText(null);
-        inventory.setTitle("Inventory");
-
-        gameOver.setHeaderText("WASTED");
-        gameOver.setTitle("GameOver");
-
-        wrongFileType.setHeaderText(null);
-        wrongFileType.setTitle("Incorrect file type");
-        wrongFileType.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-        wrongFileType.setContentText("IMPORT ERROR! Unfortunately the given file is in wrong format. Please try another one!");
-
         console.setMaxWidth(100);
-    }
-
-    private void modifyUI() {
-
     }
 
     private void onGameStart(Stage primaryStage) {
         boolean gameLoaded = false;
         while (!gameLoaded) {
-            Optional<ButtonType> startResult = gameStart.showAndWait();
+            Optional<ButtonType> startResult = alertCollection.get("gameStart").showAndWait();
             if (startResult.isPresent() && startResult.get() == buttonTypesCollection.get("newGameBtn")){
                 Optional<String> nameResult = enterName.showAndWait();
                 if (nameResult.isPresent()){
@@ -186,6 +191,7 @@ public class Main extends Application {
     }
 
     private void importGameState(Stage primaryStage) throws IOException {
+        Alert wrongFileType = alertCollection.get("wrongFileType");
         boolean returnToGame = false;
         while (!returnToGame) {
             File file = fileChooser.showOpenDialog(primaryStage);
@@ -314,11 +320,11 @@ public class Main extends Application {
                 refresh();
                 break;
             case I:
-                inventory.show();
+                alertCollection.get("inventorry").show();
                 refresh();
                 break;
         }
-        buttonsCollection.get("pickUpBtn").setOnAction(event -> onBtnPress(map.getPlayer()));
+        buttonCollection.get("pickUpBtn").setOnAction(event -> onBtnPress(map.getPlayer()));
         console.setOnAction(event -> {
             map.getPlayer().processCheatCode(getUserInput(console, canvas));
             refresh();}
@@ -329,7 +335,7 @@ public class Main extends Application {
     }
 
     private void gameOver(){
-        gameOver.show();
+        alertCollection.get("gameOver").show();
         loadNextLevel(1);
     }
 
@@ -356,7 +362,7 @@ public class Main extends Application {
         labelCollection.get("healthLabel").setText("" + map.getPlayer().getHealth());
         labelCollection.get("attackLabel").setText("" + map.getPlayer().getAttack());
         labelCollection.get("defenseLabel").setText("" + map.getPlayer().getDefense());
-        inventory.setContentText(map.getPlayer().displayInventory());
+        alertCollection.get("inventory").setContentText(map.getPlayer().displayInventory());
     }
 
     private void setupDbManager() {
