@@ -65,8 +65,6 @@ public class Main extends Application {
 
     ButtonType newGame = new ButtonType("New game");
     ButtonType loadGame = new ButtonType("Load game");
-    FileChooser fileChooser = new FileChooser();
-
     Stage primaryStage;
 
 
@@ -137,7 +135,7 @@ public class Main extends Application {
                 importGameState(primaryStage);
             } catch (IOException ioException) {
                 ioException.printStackTrace();
-            }
+            }});
       
         exportGameBtn.setOnAction(e -> {
             File file = fileChooser.showSaveDialog(primaryStage);
