@@ -81,10 +81,8 @@ public class PlayerDaoJdbc implements PlayerDao {
             if (! resultSet.next()){
                 return null;
             }else{
-                PlayerModel playerModel = new PlayerModel(resultSet.getString(1), resultSet.getInt(2),
+                return new PlayerModel(id, resultSet.getString(1), resultSet.getInt(2),
                         resultSet.getInt(3), resultSet.getInt(4), resultSet.getInt(5), resultSet.getInt(6));
-                playerModel.setId(id);
-                return playerModel;
             }
 
 
@@ -95,6 +93,19 @@ public class PlayerDaoJdbc implements PlayerDao {
 
     @Override
     public List<PlayerModel> getAll() {
-        return null;
+        try (Connection connection = dataSource.getConnection()) {
+            String sql = "SELECT id, player_name, hp, x, y, defense, attack FROM player";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            List<PlayerModel> playerList = new ArrayList<>();
+            while (resultSet.next()){
+                playerList.add(new PlayerModel(resultSet.getInt(1), resultSet.getString(2), resultSet.getInt(3),
+                        resultSet.getInt(4), resultSet.getInt(5), resultSet.getInt(6), resultSet.getInt(7)));
+
+            }
+            return playerList;
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
