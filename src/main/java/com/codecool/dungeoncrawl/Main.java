@@ -159,6 +159,7 @@ public class Main extends Application {
 
     private void saveNewPlayer() {
         dbManager.savePlayer(map.getPlayer());
+        map.getPlayer().setId(dbManager.getHighestPlayerId());
     }
 
     private void onGameStart(Stage primaryStage) {

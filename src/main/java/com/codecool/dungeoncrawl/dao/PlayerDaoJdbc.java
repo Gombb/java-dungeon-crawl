@@ -4,6 +4,8 @@ import com.codecool.dungeoncrawl.model.PlayerModel;
 
 import javax.sql.DataSource;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PlayerDaoJdbc implements PlayerDao {
@@ -44,6 +46,7 @@ public class PlayerDaoJdbc implements PlayerDao {
             statement.setInt(4, player.getDefense());
             statement.setInt(5, player.getAttack());
             statement.setInt(6, player.getId());
+            statement.executeUpdate();
         } catch (SQLException e ){
             throw new RuntimeException(e);
         }
@@ -51,10 +54,20 @@ public class PlayerDaoJdbc implements PlayerDao {
     }
 
     @Override
-    public int getHighestId(){
-        try
+    public ArrayList<Integer> getIdList(){
+        ArrayList<Integer> idList = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            String sql = "SELECT id FROM player";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            while(resultSet.next()){
+                idList.add(resultSet.getInt(1));
+            }
 
-        return null
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return idList;
     }
 
     @Override
