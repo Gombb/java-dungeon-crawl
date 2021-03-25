@@ -25,6 +25,20 @@ public class GameDatabaseManager {
         gameSavesDao = new GameSavesDaoJdbc(dataSource);
     }
 
+    public Integer getGameSavesIdForTitle(String title){
+        List<GameSave> gameSaveList = gameSavesDao.getAll();
+        for (GameSave gameSave : gameSaveList){
+            if (gameSave.getTitle().equals(title)){
+                return gameSave.getId();
+            }
+        }
+        return null;
+    }
+
+    public GameSave getGameSaveForId(int id){
+        return gameSavesDao.get(id);
+    }
+
     public List<String> getSaveTitles(){
         GameSave gameSave = gameSavesDao.get(2);
         List <GameSave> allSaves = gameSavesDao.getAll();
@@ -34,6 +48,15 @@ public class GameDatabaseManager {
         });
         return saveTitles;
     }
+
+    public GameState getGameStateModelForId(int id){
+        return gameStateDao.get(id);
+    }
+
+    public PlayerModel getPlayerModelForId(int id){
+        return playerDao.get(id);
+    }
+
 
     public void updatePlayer(PlayerModel playerModel){
         playerDao.update(playerModel);

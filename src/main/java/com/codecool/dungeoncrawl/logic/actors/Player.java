@@ -16,6 +16,14 @@ public class Player extends Actor {
     private String characterName;
     private int id;
 
+    public Player(Cell cell, int health, int attack, int defense){
+        super(cell);
+        this.type = "player";
+        this.setHealth(health);
+        this.setAttack(attack);
+        this.setDefense(defense);
+    }
+
     public Player(Cell cell) {
         super(cell);
         this.setHealth(100);
