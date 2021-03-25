@@ -170,7 +170,7 @@ public class Main extends Application {
     private void exportGame() throws IOException {
         File file = fileChooser.showSaveDialog(primaryStage);
         if (file != null) {
-            saveNewGame();
+            saveNewGame("new save");
             FileWriter writer = new FileWriter(file.getAbsolutePath());
             Gson gson = new GsonBuilder().create();
             gson.toJson(new GameState(map.getCurrentMap(), new Date(System.currentTimeMillis()), new PlayerModel(map.getPlayer())), writer);
@@ -264,7 +264,7 @@ public class Main extends Application {
         grid.add(nameLabel, 0, 0);
         grid.add(saveButton, 0, 1);
         grid.add(cancelButton,1, 1);
-        saveButton.setOnAction(event -> saveOverWriteAlert());
+        saveButton.setOnAction(event -> saveOverWriteAlert(saveInput.getText(), dialog));
         cancelButton.setOnAction(event -> dialog.close());
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setAlignment(Pos.CENTER);
