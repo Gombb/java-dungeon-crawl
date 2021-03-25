@@ -30,6 +30,7 @@ public class GameDatabaseManager {
         PlayerModel model = new PlayerModel(player);
         playerDao.add(model);
     }
+
     public int getHighestPlayerId() {
         ArrayList <Integer> idList = playerDao.getIdList();
         if (idList.size() == 0) return 0;
