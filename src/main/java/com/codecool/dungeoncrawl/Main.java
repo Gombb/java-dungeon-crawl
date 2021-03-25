@@ -5,6 +5,7 @@ import com.codecool.dungeoncrawl.logic.Cell;
 import com.codecool.dungeoncrawl.logic.GameMap;
 import com.codecool.dungeoncrawl.logic.MapLoader;
 import com.codecool.dungeoncrawl.logic.actors.Player;
+import com.codecool.dungeoncrawl.model.GameState;
 import com.codecool.dungeoncrawl.model.PlayerModel;
 import com.google.gson.Gson;
 import javafx.application.Application;
@@ -134,16 +135,10 @@ public class Main extends Application {
             }});
 
         buttonCollection.get("exportGameBtn").setOnAction(e -> {
-            saveNewGameState();
             exportGame();
         });
     }
 
-    private void exportGame(){
-        String playerSerialized = new Gson().toJson(new PlayerModel(map.getPlayer()));
-        System.out.println(playerSerialized);
-        File file = fileChooser.showSaveDialog(primaryStage);
-    }
 
     private GridPane initUI() {
         GridPane ui = new GridPane();
@@ -169,9 +164,17 @@ public class Main extends Application {
         return ui;
     }
 
-    private void saveNewGameState() {
+    private void exportGame(){
+        System.out.println("Exported");
+        File file = fileChooser.showSaveDialog(primaryStage);
+
+    }
+
+    private void saveNewGame(){
         Date currentDate = new Date(System.currentTimeMillis());
         dbManager.saveGameState(map.getCurrentMap(), currentDate, new PlayerModel(map.getPlayer()));
+        String playerSerialized = new Gson().toJson(new PlayerModel(map.getPlayer()));
+        
     }
 
     private void saveNewPlayer() {
