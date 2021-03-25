@@ -31,6 +31,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 
+
+import java.io.*;
 import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
@@ -39,13 +41,13 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import com.codecool.dungeoncrawl.logic.GameMap;
-
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
-
 import javafx.scene.text.Text;
 
 
@@ -110,7 +112,7 @@ public class Main extends Application {
         wrongFileType.setTitle("Incorrect file type");
         wrongFileType.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         wrongFileType.setContentText("IMPORT ERROR! Unfortunately the given file is in wrong format. Please try another one!");
-        alertCollection.put("wrongFileType", new Alert(Alert.AlertType.CONFIRMATION));
+        alertCollection.put("wrongFileType", wrongFileType);
         Alert gameStart = new Alert(Alert.AlertType.CONFIRMATION);
         gameStart.getButtonTypes().setAll(buttonTypesCollection.get("newGameBtn"), buttonTypesCollection.get("loadGameBtn"));
         gameStart.setHeaderText(null);
@@ -174,7 +176,34 @@ public class Main extends Application {
         return ui;
     }
 
+    private void exportGameMapToTxt() throws FileNotFoundException {
+        File mapDir = new File(System.getProperty("user.home"), ".dungeon_crawler/maps");
+        File newMap = new File(System.getProperty("user.home"), ".dungeon_crawler/maps/" + map.getPlayer().getCharacterName() + ".txt");
+        if (!mapDir.exists()) {
+            boolean wasFileCreated = mapDir.mkdirs();
+            if (wasFileCreated) {
+                System.out.println("Maps directory created at home/.dungeon_crawler");
+            }
+        }
+        PrintWriter printWriter = new PrintWriter(newMap);
+        String currentMap = map.getCurrentMap();
+        for (int i = 0; i < currentMap.length(); i++) {
+            printWriter.print(currentMap.charAt(i));
+        }
+        printWriter.close();
+    }
+
     private void exportGame() throws IOException {
+      
+        fileChooser.setInitialFileName(map.getPlayer().getCharacterName() + ".json");
+        File jsonDir = new File(System.getProperty("user.home"), ".dungeon_crawler/json");
+        if (!jsonDir.exists()) {
+            boolean wasFileCreated = jsonDir.mkdirs();
+            if (wasFileCreated) {
+                System.out.println("Json directory created at home/.dungeon_crawler");
+            }
+        }
+        fileChooser.setInitialDirectory(jsonDir);
         File file = fileChooser.showSaveDialog(primaryStage);
         if (file != null) {
             saveNewGame("new save");
@@ -183,6 +212,7 @@ public class Main extends Application {
             gson.toJson(new GameState(map.getCurrentMap(), new Date(System.currentTimeMillis()), new PlayerModel(map.getPlayer())), writer);
             writer.flush();
             writer.close();
+            exportGameMapToTxt();
         }
     }
 
@@ -243,15 +273,18 @@ public class Main extends Application {
 
     private void importGameState(Stage primaryStage) throws IOException {
         Alert wrongFileType = alertCollection.get("wrongFileType");
+        Gson gson = new Gson();
         boolean returnToGame = false;
+        File jsonDir = new File(System.getProperty("user.home"), ".dungeon_crawler/json");
         while (!returnToGame) {
+            fileChooser.setInitialDirectory(jsonDir);
             File file = fileChooser.showOpenDialog(primaryStage);
-            if (file != null && file.getCanonicalPath().endsWith(".json")) {
-                // TODO if there is a file selected load it
-                returnToGame = true;
-                primaryStage.show();
-            } else if (file == null) {
-                // if there are no files selected return to game
+            System.out.println(file.toPath().toString());
+            System.out.println(Files.probeContentType(file.toPath()));
+
+            if (file.toString().toLowerCase().endsWith(".json")) {
+                GameState gameState = gson.fromJson(new FileReader(file), GameState.class);
+                System.out.println(gameState.getCurrentMap());
                 returnToGame = true;
                 primaryStage.show();
             } else {
