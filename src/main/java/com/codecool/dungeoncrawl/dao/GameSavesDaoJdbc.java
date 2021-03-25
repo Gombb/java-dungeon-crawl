@@ -66,7 +66,7 @@ public class GameSavesDaoJdbc implements GameSavesDao {
                 GameSave gameSave = new GameSave(resultSet.getString(2));
                 gameSave.setPlayerId(resultSet.getInt(3));
                 gameSave.setGameStateId(resultSet.getInt(4));
-                gameSave.setId(1);
+                gameSave.setId(resultSet.getInt(1));
 
                 gameSavesList.add(gameSave);
             }

@@ -51,7 +51,7 @@ import javafx.scene.text.Text;
 
 public class Main extends Application {
 
-    GameMap map = MapLoader.loadMap(1);
+    GameMap map = MapLoader.loadMap(1, null);
     Move move = new Move(map);
     Canvas canvas = new Canvas(
             map.getWidth() * Tiles.TILE_WIDTH,
@@ -86,12 +86,13 @@ public class Main extends Application {
         borderPane.setCenter(canvas);
         borderPane.setRight(initUI());
         Scene scene = new Scene(borderPane);
+        onGameStart(primaryStage);
         scene.setOnKeyPressed(this::onKeyPressed);
         scene.setOnKeyReleased(this::onKeyReleased);
         primaryStage.setScene(scene);
         refresh();
         primaryStage.setTitle("Dungeon Crawl");
-        onGameStart(primaryStage);
+        primaryStage.show();
     }
 
     private void initAlertCollection(){
@@ -211,19 +212,23 @@ public class Main extends Application {
                 }
             } else if (startResult.isPresent() && startResult.get() == buttonTypesCollection.get("loadGameBtn")){
                 loadGameDialog();
+                gameLoaded = true;
             }
         }
     }
 
-    private void initLoadGame(String title) {
+    private void initLoadGame(String title, ChoiceDialog<String> choiceDialog) {
         int saveId = dbManager.getGameSavesIdForTitle(title);
-        System.out.println(saveId);
         GameSave gameSave = dbManager.getGameSaveForId(saveId);
         PlayerModel playerModel = dbManager.getPlayerModelForId(gameSave.getPlayerId());
-        System.out.println(playerModel);
         GameState gameState = dbManager.getGameStateModelForId(gameSave.getGameStateId());
-        System.out.println(gameState);
         String mapToBeLoaded = gameState.getCurrentMap();
+        this.map = MapLoader.loadMap(1, mapToBeLoaded);
+        choiceDialog.close();
+        alertCollection.get("gameStart").close();
+        Player newPlayer = new Player(map.getPlayer().getCell(), playerModel.getHp(), playerModel.getAttack(), playerModel.getDefense());
+        map.setPlayer(newPlayer);
+        this.move = new Move(map);
     }
 
     private void loadGameDialog() {
@@ -231,7 +236,7 @@ public class Main extends Application {
         ChoiceDialog <String> choiceDialog = new ChoiceDialog <>(saveTitles.get(1), saveTitles);
         choiceDialog.setContentText("Choose a previously saved game");
         choiceDialog.showAndWait().ifPresent(type -> {
-            initLoadGame(type.toString());
+            initLoadGame(type.toString(), choiceDialog);
         });
 
     }
@@ -349,7 +354,7 @@ public class Main extends Application {
     }
 
     public void loadNextLevel(int level){
-        this.map = MapLoader.loadMap(level);
+        this.map = MapLoader.loadMap(level, null);
         this.move = new Move(this.map);
         refresh();
     }
