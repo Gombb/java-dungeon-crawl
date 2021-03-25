@@ -172,19 +172,31 @@ public class Main extends Application {
 
     private void exportGame() throws IOException {
         System.out.println("Exported");
+        fileChooser.setInitialFileName(map.getPlayer().getCharacterName());
+        File jsonDir = new File(System.getProperty("user.home"), ".dungeon_crawler/json");
+        if (!jsonDir.exists()) {
+            boolean wasFileCreated = jsonDir.mkdirs();
+            if (wasFileCreated) {
+                System.out.println("Json directory created at home/.dungeon_crawler");
+            }
+        } else {
+            System.out.println("Json directory already exists at home/.dungeon_crawler");
+        }
+        fileChooser.setInitialDirectory(jsonDir);
         File file = fileChooser.showSaveDialog(primaryStage);
-        FileWriter writer = new FileWriter(file.getAbsolutePath());
-        Gson gson = new GsonBuilder().create();
-        gson.toJson(new PlayerModel(map.getPlayer()), writer);
-        writer.flush();
-        writer.close();
+        if (file != null) {
+            saveNewGame();
+            FileWriter writer = new FileWriter(file.getAbsolutePath());
+            Gson gson = new GsonBuilder().create();
+            gson.toJson(new GameState(map.getCurrentMap(), new Date(System.currentTimeMillis()), new PlayerModel(map.getPlayer())), writer);
+            writer.flush();
+            writer.close();
+        }
     }
 
-    private void saveNewGame(String title){
-        PlayerModel playerModel = new PlayerModel(map.getPlayer());
-        dbManager.updatePlayer(playerModel);
-        GameState gameState = dbManager.saveGameState(map.getCurrentMap(), playerModel);
-        dbManager.addToGameSaves(title, playerModel, gameState);
+    private void saveNewGame(){
+        Date currentDate = new Date(System.currentTimeMillis());
+        dbManager.saveGameState(map.getCurrentMap(), currentDate, new PlayerModel(map.getPlayer()));
     }
 
     private void saveNewPlayer() {
@@ -265,7 +277,7 @@ public class Main extends Application {
         grid.add(nameLabel, 0, 0);
         grid.add(saveButton, 0, 1);
         grid.add(cancelButton,1, 1);
-        saveButton.setOnAction(event -> saveOverWriteAlert(saveInput.getText(), dialog));
+        saveButton.setOnAction(event -> saveOverWriteAlert());
         cancelButton.setOnAction(event -> dialog.close());
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setAlignment(Pos.CENTER);
@@ -278,8 +290,8 @@ public class Main extends Application {
         dialog.showAndWait();
     }
 
-    private void saveOverWriteAlert(String savesTitle, Stage modal){
-        boolean overWrite = false;
+    private void saveOverWriteAlert(){
+        boolean overWrite = true;
         if (overWrite){
             Alert overWriteAlert = new Alert(Alert.AlertType.WARNING);
             overWriteAlert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -294,11 +306,6 @@ public class Main extends Application {
                     System.out.println("NONONO");
                 }
             });
-        }else{
-            saveNewGame(savesTitle);
-            modal.close();
-
-
         }
     }
 
@@ -312,7 +319,6 @@ public class Main extends Application {
     }
 
     private void onBtnPress(Player player) {
-        System.out.print(map.getCurrentMap());
         Item item = map.getPlayer().getCell().getItem();
         if (item != null) {
             player.lootItem(item);
