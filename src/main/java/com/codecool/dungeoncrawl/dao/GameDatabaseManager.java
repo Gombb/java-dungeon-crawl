@@ -24,7 +24,7 @@ public class GameDatabaseManager {
         gameStateDao = new GameStateDaoJdbc(dataSource);
         gameSavesDao = new GameSavesDaoJdbc(dataSource);
     }
-    
+
     public Integer getGameSavesIdForTitle(String title){
         List<GameSave> gameSaveList = gameSavesDao.getAll();
         for (GameSave gameSave : gameSaveList){
@@ -33,6 +33,10 @@ public class GameDatabaseManager {
             }
         }
         return null;
+    }
+
+    public GameSave getGameSaveForId(int id){
+        return gameSavesDao.get(id);
     }
 
     public List<String> getSaveTitles(){

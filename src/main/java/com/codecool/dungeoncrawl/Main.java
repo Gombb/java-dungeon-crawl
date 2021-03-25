@@ -5,6 +5,7 @@ import com.codecool.dungeoncrawl.logic.Cell;
 import com.codecool.dungeoncrawl.logic.GameMap;
 import com.codecool.dungeoncrawl.logic.MapLoader;
 import com.codecool.dungeoncrawl.logic.actors.Player;
+import com.codecool.dungeoncrawl.model.GameSave;
 import com.codecool.dungeoncrawl.model.GameState;
 import com.codecool.dungeoncrawl.model.PlayerModel;
 import com.google.gson.Gson;
@@ -219,7 +220,8 @@ public class Main extends Application {
         ChoiceDialog <String> choiceDialog = new ChoiceDialog <>(saveTitles.get(1), saveTitles);
         choiceDialog.setContentText("Choose a previously saved game");
         choiceDialog.showAndWait().ifPresent(type -> {
-            System.out.println(type.toString());
+            int saveId = dbManager.getGameSavesIdForTitle(type.toString());
+            GameSave gameSave = dbManager.getGameSaveForId(saveId);
         });
 
     }
