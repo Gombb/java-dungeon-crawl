@@ -6,6 +6,7 @@ import com.codecool.dungeoncrawl.logic.GameMap;
 import com.codecool.dungeoncrawl.logic.MapLoader;
 import com.codecool.dungeoncrawl.logic.actors.Player;
 import com.codecool.dungeoncrawl.model.PlayerModel;
+import com.google.gson.Gson;
 import javafx.application.Application;
 import com.codecool.dungeoncrawl.logic.*;
 import com.codecool.dungeoncrawl.logic.items.*;
@@ -130,9 +131,16 @@ public class Main extends Application {
             }});
 
         buttonCollection.get("exportGameBtn").setOnAction(e -> {
-            File file = fileChooser.showSaveDialog(primaryStage);
+            exportGame();
         });
     }
+
+    private void exportGame(){
+        String playerSerialized = new Gson().toJson(new PlayerModel(map.getPlayer()));
+        System.out.println(playerSerialized);
+        File file = fileChooser.showSaveDialog(primaryStage);
+    }
+
     private GridPane initUI() {
         GridPane ui = new GridPane();
         ui.setPrefWidth(200);
