@@ -217,6 +217,7 @@ public class Main extends Application {
 
     private void initLoadGame(String title) {
         int saveId = dbManager.getGameSavesIdForTitle(title);
+        System.out.println(saveId);
         GameSave gameSave = dbManager.getGameSaveForId(saveId);
         PlayerModel playerModel = dbManager.getPlayerModelForId(saveId);
         GameState gameState = dbManager.getGameStateModelForId(saveId);

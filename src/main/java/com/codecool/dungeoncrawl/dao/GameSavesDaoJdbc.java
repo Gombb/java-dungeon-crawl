@@ -47,6 +47,7 @@ public class GameSavesDaoJdbc implements GameSavesDao {
                 GameSave gameSave = new GameSave(resultSet.getString(1));
                 gameSave.setPlayerId(resultSet.getInt(2));
                 gameSave.setGameStateId(resultSet.getInt(3));
+                gameSave.setId(id);
                 return gameSave;
             }
         } catch (SQLException e) {
@@ -57,14 +58,16 @@ public class GameSavesDaoJdbc implements GameSavesDao {
     @Override
     public List<GameSave> getAll() {
         try (Connection connection = dataSource.getConnection()) {
-            String sql = "SELECT save_title, player_id, game_state_id FROM game_saves";
+            String sql = "SELECT id, save_title, player_id, game_state_id FROM game_saves";
             PreparedStatement statement = connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
             List<GameSave> gameSavesList = new ArrayList<>();
             while (resultSet.next()){
-                GameSave gameSave = new GameSave(resultSet.getString(1));
-                gameSave.setPlayerId(resultSet.getInt(2));
-                gameSave.setGameStateId(resultSet.getInt(3));
+                GameSave gameSave = new GameSave(resultSet.getString(2));
+                gameSave.setPlayerId(resultSet.getInt(3));
+                gameSave.setGameStateId(resultSet.getInt(4));
+                gameSave.setId(1);
+
                 gameSavesList.add(gameSave);
             }
             return gameSavesList;
