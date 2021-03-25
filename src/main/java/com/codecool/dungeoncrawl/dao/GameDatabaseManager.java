@@ -50,6 +50,7 @@ public class GameDatabaseManager {
     }
 
     public GameState getGameStateModelForId(int id){
+        System.out.println(id);
         return gameStateDao.get(id);
     }
 

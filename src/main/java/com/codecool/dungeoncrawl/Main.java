@@ -219,10 +219,11 @@ public class Main extends Application {
         int saveId = dbManager.getGameSavesIdForTitle(title);
         System.out.println(saveId);
         GameSave gameSave = dbManager.getGameSaveForId(saveId);
-        PlayerModel playerModel = dbManager.getPlayerModelForId(saveId);
-        GameState gameState = dbManager.getGameStateModelForId(saveId);
+        PlayerModel playerModel = dbManager.getPlayerModelForId(gameSave.getPlayerId());
+        System.out.println(playerModel);
+        GameState gameState = dbManager.getGameStateModelForId(gameSave.getGameStateId());
+        System.out.println(gameState);
         String mapToBeLoaded = gameState.getCurrentMap();
-
     }
 
     private void loadGameDialog() {
