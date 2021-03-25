@@ -174,7 +174,7 @@ public class Main extends Application {
         Date currentDate = new Date(System.currentTimeMillis());
         dbManager.saveGameState(map.getCurrentMap(), currentDate, new PlayerModel(map.getPlayer()));
         String playerSerialized = new Gson().toJson(new PlayerModel(map.getPlayer()));
-        
+
     }
 
     private void saveNewPlayer() {
