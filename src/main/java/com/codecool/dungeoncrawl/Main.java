@@ -279,7 +279,7 @@ public class Main extends Application {
     }
 
     private void saveOverWriteAlert(String savesTitle, Stage modal){
-        boolean overWrite = false;
+        boolean overWrite = checkIfTitleExists(savesTitle);
         if (overWrite){
             Alert overWriteAlert = new Alert(Alert.AlertType.WARNING);
             overWriteAlert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -297,8 +297,6 @@ public class Main extends Application {
         }else{
             saveNewGame(savesTitle);
             modal.close();
-
-
         }
     }
 
