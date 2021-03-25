@@ -5,8 +5,6 @@ import com.codecool.dungeoncrawl.model.PlayerModel;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GameStateDaoJdbc implements GameStateDao {
@@ -19,16 +17,11 @@ public class GameStateDaoJdbc implements GameStateDao {
     @Override
     public void add(GameState state) {
         try (Connection conn = dataSource.getConnection()) {
-            String sql = "INSERT INTO game_state (current_map, saved_at, player_id) VALUES (?, ?, ?, ?)";
+            String sql = "INSERT INTO game_state (player_id, current_map, saved_at) VALUES (?, ?, ?)";
             PreparedStatement statement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-
-            SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
-            Date date = new Date(System.currentTimeMillis());
-            state.setSavedAt(date);
-
-            statement.setString(1, "test"); // TODO add exported json file
-            statement.setDate(2, state.getSavedAt());
-            statement.setInt(3, state.getPlayer().getId());
+            statement.setInt(1, state.getPlayer().getId());
+            statement.setString(2, state.getCurrentMap());
+            statement.setDate(3, state.getSavedAt());
             statement.executeUpdate();
             ResultSet resultSet = statement.getGeneratedKeys();
             resultSet.next();

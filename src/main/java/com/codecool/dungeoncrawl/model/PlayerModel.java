@@ -9,7 +9,6 @@ public class PlayerModel extends BaseModel {
     private int defense;
     private int x;
     private int y;
-    private int id;
 
    public PlayerModel(int id, String playerName, int hp, int x, int y, int defense, int attack) {
         this.playerName = playerName;

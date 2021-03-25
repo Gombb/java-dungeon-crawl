@@ -30,7 +30,10 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import com.codecool.dungeoncrawl.logic.GameMap;
+
+import java.sql.Date;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
@@ -130,7 +133,7 @@ public class Main extends Application {
             }});
 
         buttonCollection.get("exportGameBtn").setOnAction(e -> {
-            File file = fileChooser.showSaveDialog(primaryStage);
+            saveNewGameState();
         });
     }
     private GridPane initUI() {
@@ -155,6 +158,11 @@ public class Main extends Application {
         rightPaneInputField.setMaxWidth(100);
 
         return ui;
+    }
+
+    private void saveNewGameState() {
+        Date currentDate = new Date(System.currentTimeMillis());
+        dbManager.saveGameState(map.getCurrentMap(), currentDate, new PlayerModel(map.getPlayer()));
     }
 
     private void saveNewPlayer() {
