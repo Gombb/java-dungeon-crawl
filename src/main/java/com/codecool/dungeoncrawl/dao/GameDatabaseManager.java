@@ -24,6 +24,16 @@ public class GameDatabaseManager {
         gameStateDao = new GameStateDaoJdbc(dataSource);
         gameSavesDao = new GameSavesDaoJdbc(dataSource);
     }
+    
+    public Integer getGameSavesIdForTitle(String title){
+        List<GameSave> gameSaveList = gameSavesDao.getAll();
+        for (GameSave gameSave : gameSaveList){
+            if (gameSave.getTitle().equals(title)){
+                return gameSave.getId();
+            }
+        }
+        return null;
+    }
 
     public List<String> getSaveTitles(){
         GameSave gameSave = gameSavesDao.get(2);

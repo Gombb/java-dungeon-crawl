@@ -17,7 +17,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -27,6 +29,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+
+import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -39,6 +43,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 
 import javafx.scene.text.Text;
 
@@ -204,13 +209,19 @@ public class Main extends Application {
                     gameLoaded = true;
                 }
             } else if (startResult.isPresent() && startResult.get() == buttonTypesCollection.get("loadGameBtn")){
-                File file = fileChooser.showOpenDialog(primaryStage);
-                if (file != null) {
-                    primaryStage.show();
-                    gameLoaded = true;
-                }
+                loadGameDialog();
             }
         }
+    }
+
+    private void loadGameDialog(){
+        List <String> saveTitles = dbManager.getSaveTitles();
+        ChoiceDialog <String> choiceDialog = new ChoiceDialog <>(saveTitles.get(1), saveTitles);
+        choiceDialog.setContentText("Choose a previously saved game");
+        choiceDialog.showAndWait().ifPresent(type -> {
+            System.out.println(type.toString());
+        });
+
     }
 
     private void importGameState(Stage primaryStage) throws IOException {
