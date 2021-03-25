@@ -28,7 +28,7 @@ import java.io.IOException;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
+import com.codecool.dungeoncrawl.logic.GameMap;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -276,6 +276,7 @@ public class Main extends Application {
     }
 
     private void onBtnPress(Player player) {
+        System.out.print(map.getCurrentMap());
         Item item = map.getPlayer().getCell().getItem();
         if (item != null) {
             player.lootItem(item);

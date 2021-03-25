@@ -1,7 +1,7 @@
 package com.codecool.dungeoncrawl.logic;
 
-import com.codecool.dungeoncrawl.logic.actors.Actor;
-import com.codecool.dungeoncrawl.logic.actors.Player;
+import com.codecool.dungeoncrawl.logic.actors.*;
+import com.codecool.dungeoncrawl.logic.items.*;
 
 import java.util.ArrayList;
 
@@ -58,5 +58,59 @@ public class GameMap {
 
     public int getHeight() {
         return height;
+    }
+
+    public String getCurrentMap() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(width).append(" ").append(height);
+        sb.append("\n");
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                if (getCell(j, i).getActor() != null) {
+                    sb.append(switchTileNameToMarker(getCell(j, i).getActor().getTileName()));
+                } else if (getCell(j, i).getItem() != null) {
+                    sb.append(switchTileNameToMarker(getCell(j, i).getItem().getTileName()));
+                } else {
+                    sb.append(switchTileNameToMarker(getCell(j, i).getTileName()));
+                }
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
+    private char switchTileNameToMarker(String tileName) {
+        switch (tileName) {
+            case "empty":
+                return ' ';
+            case "wall":
+                return '#';
+            case "floor":
+                return '.';
+            case "skeleton":
+                return 's';
+            case "ghost":
+                return 'g';
+            case "player":
+                return '@';
+            case "health_potion":
+                return 'p';
+            case "key":
+                return 'k';
+            case "weapon":
+                return 'w';
+            case "shield":
+                return 'b';
+            case "cheese":
+                return 'c';
+            case "apple":
+                return 'a';
+            case "boss":
+                return 'B';
+            case "gate":
+                return 'G';
+            default:
+                throw new RuntimeException("Unrecognized character: '" + tileName + "'");
+        }
     }
 }
