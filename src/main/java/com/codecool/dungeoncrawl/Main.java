@@ -215,13 +215,21 @@ public class Main extends Application {
         }
     }
 
-    private void loadGameDialog(){
+    private void initLoadGame(String title) {
+        int saveId = dbManager.getGameSavesIdForTitle(title);
+        GameSave gameSave = dbManager.getGameSaveForId(saveId);
+        PlayerModel playerModel = dbManager.getPlayerModelForId(saveId);
+        GameState gameState = dbManager.getGameStateModelForId(saveId);
+        String mapToBeLoaded = gameState.getCurrentMap();
+
+    }
+
+    private void loadGameDialog() {
         List <String> saveTitles = dbManager.getSaveTitles();
         ChoiceDialog <String> choiceDialog = new ChoiceDialog <>(saveTitles.get(1), saveTitles);
         choiceDialog.setContentText("Choose a previously saved game");
         choiceDialog.showAndWait().ifPresent(type -> {
-            int saveId = dbManager.getGameSavesIdForTitle(type.toString());
-            GameSave gameSave = dbManager.getGameSaveForId(saveId);
+            initLoadGame(type.toString());
         });
 
     }

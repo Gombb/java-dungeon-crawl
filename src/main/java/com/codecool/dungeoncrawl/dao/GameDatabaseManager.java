@@ -49,6 +49,15 @@ public class GameDatabaseManager {
         return saveTitles;
     }
 
+    public GameState getGameStateModelForId(int id){
+        return gameStateDao.get(id);
+    }
+
+    public PlayerModel getPlayerModelForId(int id){
+        return playerDao.get(id);
+    }
+
+
     public void updatePlayer(PlayerModel playerModel){
         playerDao.update(playerModel);
     }
