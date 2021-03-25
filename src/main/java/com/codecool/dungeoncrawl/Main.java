@@ -179,9 +179,11 @@ public class Main extends Application {
         }
     }
 
-    private void saveNewGame(){
-        Date currentDate = new Date(System.currentTimeMillis());
-        dbManager.saveGameState(map.getCurrentMap(), currentDate, new PlayerModel(map.getPlayer()));
+    private void saveNewGame(String title){
+        PlayerModel playerModel = new PlayerModel(map.getPlayer());
+        dbManager.updatePlayer(playerModel);
+        GameState gameState = dbManager.saveGameState(map.getCurrentMap(), playerModel);
+        dbManager.addToGameSaves(title, playerModel, gameState);
     }
 
     private void saveNewPlayer() {
