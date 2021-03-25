@@ -5,6 +5,7 @@ import com.codecool.dungeoncrawl.logic.Cell;
 import com.codecool.dungeoncrawl.logic.GameMap;
 import com.codecool.dungeoncrawl.logic.MapLoader;
 import com.codecool.dungeoncrawl.logic.actors.Player;
+import com.codecool.dungeoncrawl.model.GameState;
 import com.codecool.dungeoncrawl.model.PlayerModel;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -171,13 +172,26 @@ public class Main extends Application {
 
     private void exportGame() throws IOException {
         System.out.println("Exported");
+        fileChooser.setInitialFileName(map.getPlayer().getCharacterName());
+        File jsonDir = new File(System.getProperty("user.home"), ".dungeon_crawler/json");
+        if (!jsonDir.exists()) {
+            boolean wasFileCreated = jsonDir.mkdirs();
+            if (wasFileCreated) {
+                System.out.println("Json directory created at home/.dungeon_crawler");
+            }
+        } else {
+            System.out.println("Json directory already exists at home/.dungeon_crawler");
+        }
+        fileChooser.setInitialDirectory(jsonDir);
         File file = fileChooser.showSaveDialog(primaryStage);
-        saveNewGame();
-        FileWriter writer = new FileWriter(file.getAbsolutePath());
-        Gson gson = new GsonBuilder().create();
-        gson.toJson(new PlayerModel(map.getPlayer()), writer);
-        writer.flush();
-        writer.close();
+        if (file != null) {
+            saveNewGame();
+            FileWriter writer = new FileWriter(file.getAbsolutePath());
+            Gson gson = new GsonBuilder().create();
+            gson.toJson(new GameState(map.getCurrentMap(), new Date(System.currentTimeMillis()), new PlayerModel(map.getPlayer())), writer);
+            writer.flush();
+            writer.close();
+        }
     }
 
     private void saveNewGame(){
@@ -305,7 +319,6 @@ public class Main extends Application {
     }
 
     private void onBtnPress(Player player) {
-        System.out.print(map.getCurrentMap());
         Item item = map.getPlayer().getCell().getItem();
         if (item != null) {
             player.lootItem(item);
