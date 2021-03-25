@@ -11,6 +11,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class GameDatabaseManager {
     private PlayerDao playerDao;
@@ -22,6 +23,16 @@ public class GameDatabaseManager {
         playerDao = new PlayerDaoJdbc(dataSource);
         gameStateDao = new GameStateDaoJdbc(dataSource);
         gameSavesDao = new GameSavesDaoJdbc(dataSource);
+    }
+
+    public List<String> getSaveTitles(){
+        GameSave gameSave = gameSavesDao.get(2);
+        List <GameSave> allSaves = gameSavesDao.getAll();
+        List <String> saveTitles = new ArrayList<>();
+        allSaves.forEach(save -> {
+            saveTitles.add(save.getTitle());
+        });
+        return saveTitles;
     }
 
     public void updatePlayer(PlayerModel playerModel){

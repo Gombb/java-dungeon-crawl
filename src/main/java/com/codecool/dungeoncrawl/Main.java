@@ -38,10 +38,7 @@ import com.codecool.dungeoncrawl.logic.GameMap;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import javafx.scene.text.Text;
 
@@ -171,18 +168,6 @@ public class Main extends Application {
     }
 
     private void exportGame() throws IOException {
-        System.out.println("Exported");
-        fileChooser.setInitialFileName(map.getPlayer().getCharacterName());
-        File jsonDir = new File(System.getProperty("user.home"), ".dungeon_crawler/json");
-        if (!jsonDir.exists()) {
-            boolean wasFileCreated = jsonDir.mkdirs();
-            if (wasFileCreated) {
-                System.out.println("Json directory created at home/.dungeon_crawler");
-            }
-        } else {
-            System.out.println("Json directory already exists at home/.dungeon_crawler");
-        }
-        fileChooser.setInitialDirectory(jsonDir);
         File file = fileChooser.showSaveDialog(primaryStage);
         if (file != null) {
             saveNewGame();
@@ -290,8 +275,17 @@ public class Main extends Application {
         dialog.showAndWait();
     }
 
-    private void saveOverWriteAlert(){
-        boolean overWrite = true;
+
+    private boolean checkIfTitleExists(String savesTitle){
+        List<String> allTitles = dbManager.getSaveTitles();
+        for (String title : allTitles){
+            if (title.equals(savesTitle)) return true;
+        }
+        return false;
+    }
+
+    private void saveOverWriteAlert(String savesTitle, Stage modal){
+        boolean overWrite = checkIfTitleExists(savesTitle);
         if (overWrite){
             Alert overWriteAlert = new Alert(Alert.AlertType.WARNING);
             overWriteAlert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -301,11 +295,14 @@ public class Main extends Application {
             overWriteAlert.getButtonTypes().setAll(yesButton, noButton);
             overWriteAlert.showAndWait().ifPresent(type -> {
                 if (type == yesButton) {
-                    System.out.println("YESYES");
+                    saveNewGame(savesTitle);
                 }else{
-                    System.out.println("NONONO");
+                    overWriteAlert.close();
                 }
             });
+        }else{
+            saveNewGame(savesTitle);
+            modal.close();
         }
     }
 
@@ -313,7 +310,6 @@ public class Main extends Application {
         String userInput = textField.getText();
         rightPaneInputField.clear();
         canvas.requestFocus();
-        System.out.println(userInput);
         return userInput;
 
     }
