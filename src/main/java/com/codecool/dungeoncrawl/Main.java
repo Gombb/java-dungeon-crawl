@@ -134,11 +134,8 @@ public class Main extends Application {
             }});
 
         buttonCollection.get("exportGameBtn").setOnAction(e -> {
-<<<<<<< HEAD
             saveNewGameState();
-=======
             exportGame();
->>>>>>> feat/export_PlayerModel
         });
     }
 
