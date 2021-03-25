@@ -25,7 +25,8 @@ public class GameDatabaseManager {
         gameSavesDao = new GameSavesDaoJdbc(dataSource);
     }
 
-    public List<String> getsaveTitles(){
+    public List<String> getSaveTitles(){
+        GameSave gameSave = gameSavesDao.get(2);
         List <GameSave> allSaves = gameSavesDao.getAll();
         List <String> saveTitles = new ArrayList<>();
         allSaves.forEach(save -> {

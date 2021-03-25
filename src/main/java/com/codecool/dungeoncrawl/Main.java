@@ -38,10 +38,7 @@ import com.codecool.dungeoncrawl.logic.GameMap;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import javafx.scene.text.Text;
 
@@ -171,7 +168,6 @@ public class Main extends Application {
     }
 
     private void exportGame() throws IOException {
-        System.out.println("Exported");
         File file = fileChooser.showSaveDialog(primaryStage);
         FileWriter writer = new FileWriter(file.getAbsolutePath());
         Gson gson = new GsonBuilder().create();
@@ -278,6 +274,14 @@ public class Main extends Application {
         dialog.showAndWait();
     }
 
+    private boolean checkIfTitleExists(String savesTitle){
+        List<String> allTitles = dbManager.getSaveTitles();
+        for (String title : allTitles){
+            if (title.equals(savesTitle)) return true;
+        }
+        return false;
+    }
+
     private void saveOverWriteAlert(String savesTitle, Stage modal){
         boolean overWrite = checkIfTitleExists(savesTitle);
         if (overWrite){
@@ -289,9 +293,9 @@ public class Main extends Application {
             overWriteAlert.getButtonTypes().setAll(yesButton, noButton);
             overWriteAlert.showAndWait().ifPresent(type -> {
                 if (type == yesButton) {
-                    System.out.println("YESYES");
+                    saveNewGame(savesTitle);
                 }else{
-                    System.out.println("NONONO");
+                    overWriteAlert.close();
                 }
             });
         }else{
@@ -304,7 +308,6 @@ public class Main extends Application {
         String userInput = textField.getText();
         rightPaneInputField.clear();
         canvas.requestFocus();
-        System.out.println(userInput);
         return userInput;
 
     }
