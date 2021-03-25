@@ -5,22 +5,47 @@ import com.codecool.dungeoncrawl.logic.actors.Player;
 public class PlayerModel extends BaseModel {
     private String playerName;
     private int hp;
+    private int attack;
+    private int defense;
     private int x;
     private int y;
+    private int id;
 
-    public PlayerModel(String playerName, int x, int y) {
+   public PlayerModel(int id, String playerName, int hp, int x, int y, int defense, int attack) {
         this.playerName = playerName;
         this.x = x;
         this.y = y;
+        this.hp = hp;
+        this.attack = attack;
+        this.defense = defense;
+        this.id = id;
     }
 
+
     public PlayerModel(Player player) {
-        this.playerName = player.getTileName();
+        this.playerName = player.getCharacterName();
         this.x = player.getX();
         this.y = player.getY();
-
+        this.attack = player.getAttack();
+        this.defense = player.getDefense();
+        this.id = player.getId();
         this.hp = player.getHealth();
+    }
 
+    public void setDefense(int defense) {
+        this.defense = defense;
+    }
+
+    public void setAttack(int attack) {
+        this.attack = attack;
+    }
+
+    public int getAttack() {
+        return attack;
+    }
+
+    public int getDefense() {
+        return defense;
     }
 
     public String getPlayerName() {

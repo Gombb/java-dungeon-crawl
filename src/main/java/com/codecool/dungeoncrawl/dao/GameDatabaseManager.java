@@ -6,6 +6,8 @@ import org.postgresql.ds.PGSimpleDataSource;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class GameDatabaseManager {
     private PlayerDao playerDao;
@@ -18,6 +20,11 @@ public class GameDatabaseManager {
     public void savePlayer(Player player) {
         PlayerModel model = new PlayerModel(player);
         playerDao.add(model);
+    }
+    public int getHighestPlayerId() {
+        ArrayList <Integer> idList = playerDao.getIdList();
+        if (idList.size() == 0) return 0;
+        return Collections.max(playerDao.getIdList());
     }
 
     private DataSource connect() throws SQLException {
