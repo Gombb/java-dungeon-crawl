@@ -5,18 +5,24 @@ import com.codecool.dungeoncrawl.logic.actors.Skeleton;
 import com.codecool.dungeoncrawl.logic.items.*;
 import com.codecool.dungeoncrawl.logic.actors.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class MapLoader {
-    public static GameMap loadMap(int level) {
-        InputStream is = MapLoader.class.getResourceAsStream("/map" + level + ".txt");
+    public static GameMap loadMap(int level, String loadGame) {
+        InputStream is = null;
+        if (loadGame != null){
+            is = new ByteArrayInputStream(loadGame.getBytes());
+
+        }else {
+            is = MapLoader.class.getResourceAsStream("/map" + level + ".txt");
+        }
         Scanner scanner = new Scanner(is);
         int width = scanner.nextInt();
         int height = scanner.nextInt();
-
-        scanner.nextLine(); // empty line
-
+        scanner.nextLine();
         GameMap map = new GameMap(width, height, CellType.EMPTY, level);
         for (int y = 0; y < height; y++) {
             String line = scanner.nextLine();

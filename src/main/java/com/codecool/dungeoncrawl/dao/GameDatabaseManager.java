@@ -1,6 +1,7 @@
 package com.codecool.dungeoncrawl.dao;
 
 import com.codecool.dungeoncrawl.logic.actors.Player;
+import com.codecool.dungeoncrawl.model.GameSave;
 import com.codecool.dungeoncrawl.model.GameState;
 import com.codecool.dungeoncrawl.model.PlayerModel;
 import org.postgresql.ds.PGSimpleDataSource;
@@ -10,25 +11,72 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class GameDatabaseManager {
     private PlayerDao playerDao;
     private GameStateDao gameStateDao;
+    private GameSavesDao gameSavesDao;
 
     public void setup() throws SQLException {
         DataSource dataSource = connect();
         playerDao = new PlayerDaoJdbc(dataSource);
         gameStateDao = new GameStateDaoJdbc(dataSource);
+        gameSavesDao = new GameSavesDaoJdbc(dataSource);
     }
 
-    public void saveGameState(String currentMap, Date currentDate, PlayerModel playerModel) {
+    public Integer getGameSavesIdForTitle(String title){
+        List<GameSave> gameSaveList = gameSavesDao.getAll();
+        for (GameSave gameSave : gameSaveList){
+            if (gameSave.getTitle().equals(title)){
+                return gameSave.getId();
+            }
+        }
+        return null;
+    }
+
+    public GameSave getGameSaveForId(int id){
+        return gameSavesDao.get(id);
+    }
+
+    public List<String> getSaveTitles(){
+        GameSave gameSave = gameSavesDao.get(2);
+        List <GameSave> allSaves = gameSavesDao.getAll();
+        List <String> saveTitles = new ArrayList<>();
+        allSaves.forEach(save -> {
+            saveTitles.add(save.getTitle());
+        });
+        return saveTitles;
+    }
+
+    public GameState getGameStateModelForId(int id){
+        return gameStateDao.get(id);
+    }
+
+    public PlayerModel getPlayerModelForId(int id){
+        return playerDao.get(id);
+    }
+
+
+    public void updatePlayer(PlayerModel playerModel){
+        playerDao.update(playerModel);
+    }
+
+    public void addToGameSaves(String title, PlayerModel playerModel, GameState gameState){
+        gameSavesDao.add(new GameSave(title, gameState, playerModel));
+    }
+
+    public GameState saveGameState(String currentMap, PlayerModel playerModel) {
+        Date currentDate = new Date(System.currentTimeMillis());
         GameState gameState = new GameState(currentMap, currentDate, playerModel);
-        gameStateDao.add(gameState);
+        gameState = gameStateDao.add(gameState);
+        return gameState;
     };
 
-    public void savePlayer(Player player) {
+    public PlayerModel savePlayer(Player player) {
         PlayerModel model = new PlayerModel(player);
-        playerDao.add(model);
+        model = playerDao.add(model);
+        return model;
     }
 
     public int getHighestPlayerId() {

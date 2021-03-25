@@ -5,6 +5,7 @@ import com.codecool.dungeoncrawl.logic.Cell;
 import com.codecool.dungeoncrawl.logic.GameMap;
 import com.codecool.dungeoncrawl.logic.MapLoader;
 import com.codecool.dungeoncrawl.logic.actors.Player;
+import com.codecool.dungeoncrawl.model.GameSave;
 import com.codecool.dungeoncrawl.model.GameState;
 import com.codecool.dungeoncrawl.model.PlayerModel;
 import com.google.gson.Gson;
@@ -17,7 +18,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -28,26 +31,29 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 
-import java.io.*;
 
+import java.io.*;
+import java.awt.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import com.codecool.dungeoncrawl.logic.GameMap;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
+import java.util.List;
 import javafx.scene.text.Text;
 
 
 public class Main extends Application {
 
-    GameMap map = MapLoader.loadMap(1);
+    GameMap map = MapLoader.loadMap(1, null);
     Move move = new Move(map);
     Canvas canvas = new Canvas(
             map.getWidth() * Tiles.TILE_WIDTH,
@@ -82,12 +88,13 @@ public class Main extends Application {
         borderPane.setCenter(canvas);
         borderPane.setRight(initUI());
         Scene scene = new Scene(borderPane);
+        onGameStart(primaryStage);
         scene.setOnKeyPressed(this::onKeyPressed);
         scene.setOnKeyReleased(this::onKeyReleased);
         primaryStage.setScene(scene);
         refresh();
         primaryStage.setTitle("Dungeon Crawl");
-        onGameStart(primaryStage);
+        primaryStage.show();
     }
 
     private void initAlertCollection(){
@@ -187,6 +194,7 @@ public class Main extends Application {
     }
 
     private void exportGame() throws IOException {
+      
         fileChooser.setInitialFileName(map.getPlayer().getCharacterName() + ".json");
         File jsonDir = new File(System.getProperty("user.home"), ".dungeon_crawler/json");
         if (!jsonDir.exists()) {
@@ -198,7 +206,7 @@ public class Main extends Application {
         fileChooser.setInitialDirectory(jsonDir);
         File file = fileChooser.showSaveDialog(primaryStage);
         if (file != null) {
-            saveNewGame();
+            saveNewGame("new save");
             FileWriter writer = new FileWriter(file.getAbsolutePath());
             Gson gson = new GsonBuilder().create();
             gson.toJson(new GameState(map.getCurrentMap(), new Date(System.currentTimeMillis()), new PlayerModel(map.getPlayer())), writer);
@@ -208,9 +216,11 @@ public class Main extends Application {
         }
     }
 
-    private void saveNewGame(){
-        Date currentDate = new Date(System.currentTimeMillis());
-        dbManager.saveGameState(map.getCurrentMap(), currentDate, new PlayerModel(map.getPlayer()));
+    private void saveNewGame(String title){
+        PlayerModel playerModel = new PlayerModel(map.getPlayer());
+        dbManager.updatePlayer(playerModel);
+        GameState gameState = dbManager.saveGameState(map.getCurrentMap(), playerModel);
+        dbManager.addToGameSaves(title, playerModel, gameState);
     }
 
     private void saveNewPlayer() {
@@ -231,13 +241,34 @@ public class Main extends Application {
                     gameLoaded = true;
                 }
             } else if (startResult.isPresent() && startResult.get() == buttonTypesCollection.get("loadGameBtn")){
-                File file = fileChooser.showOpenDialog(primaryStage);
-                if (file != null) {
-                    primaryStage.show();
-                    gameLoaded = true;
-                }
+                loadGameDialog();
+                gameLoaded = true;
             }
         }
+    }
+
+    private void initLoadGame(String title, ChoiceDialog<String> choiceDialog) {
+        int saveId = dbManager.getGameSavesIdForTitle(title);
+        GameSave gameSave = dbManager.getGameSaveForId(saveId);
+        PlayerModel playerModel = dbManager.getPlayerModelForId(gameSave.getPlayerId());
+        GameState gameState = dbManager.getGameStateModelForId(gameSave.getGameStateId());
+        String mapToBeLoaded = gameState.getCurrentMap();
+        this.map = MapLoader.loadMap(1, mapToBeLoaded);
+        choiceDialog.close();
+        alertCollection.get("gameStart").close();
+        Player newPlayer = new Player(map.getPlayer().getCell(), playerModel.getHp(), playerModel.getAttack(), playerModel.getDefense());
+        map.setPlayer(newPlayer);
+        this.move = new Move(map);
+    }
+
+    private void loadGameDialog() {
+        List <String> saveTitles = dbManager.getSaveTitles();
+        ChoiceDialog <String> choiceDialog = new ChoiceDialog <>(saveTitles.get(1), saveTitles);
+        choiceDialog.setContentText("Choose a previously saved game");
+        choiceDialog.showAndWait().ifPresent(type -> {
+            initLoadGame(type.toString(), choiceDialog);
+        });
+
     }
 
     private void importGameState(Stage primaryStage) throws IOException {
@@ -294,7 +325,7 @@ public class Main extends Application {
         grid.add(nameLabel, 0, 0);
         grid.add(saveButton, 0, 1);
         grid.add(cancelButton,1, 1);
-        saveButton.setOnAction(event -> saveOverWriteAlert());
+        saveButton.setOnAction(event -> saveOverWriteAlert(saveInput.getText(), dialog));
         cancelButton.setOnAction(event -> dialog.close());
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setAlignment(Pos.CENTER);
@@ -307,8 +338,17 @@ public class Main extends Application {
         dialog.showAndWait();
     }
 
-    private void saveOverWriteAlert(){
-        boolean overWrite = true;
+
+    private boolean checkIfTitleExists(String savesTitle){
+        List<String> allTitles = dbManager.getSaveTitles();
+        for (String title : allTitles){
+            if (title.equals(savesTitle)) return true;
+        }
+        return false;
+    }
+
+    private void saveOverWriteAlert(String savesTitle, Stage modal){
+        boolean overWrite = checkIfTitleExists(savesTitle);
         if (overWrite){
             Alert overWriteAlert = new Alert(Alert.AlertType.WARNING);
             overWriteAlert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -318,11 +358,14 @@ public class Main extends Application {
             overWriteAlert.getButtonTypes().setAll(yesButton, noButton);
             overWriteAlert.showAndWait().ifPresent(type -> {
                 if (type == yesButton) {
-                    System.out.println("YESYES");
+                    saveNewGame(savesTitle);
                 }else{
-                    System.out.println("NONONO");
+                    overWriteAlert.close();
                 }
             });
+        }else{
+            saveNewGame(savesTitle);
+            modal.close();
         }
     }
 
@@ -330,7 +373,6 @@ public class Main extends Application {
         String userInput = textField.getText();
         rightPaneInputField.clear();
         canvas.requestFocus();
-        System.out.println(userInput);
         return userInput;
 
     }
@@ -345,7 +387,7 @@ public class Main extends Application {
     }
 
     public void loadNextLevel(int level){
-        this.map = MapLoader.loadMap(level);
+        this.map = MapLoader.loadMap(level, null);
         this.move = new Move(this.map);
         refresh();
     }
