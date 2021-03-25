@@ -169,18 +169,19 @@ public class Main extends Application {
 
     private void exportGame() throws IOException {
         File file = fileChooser.showSaveDialog(primaryStage);
-        FileWriter writer = new FileWriter(file.getAbsolutePath());
-        Gson gson = new GsonBuilder().create();
-        gson.toJson(new PlayerModel(map.getPlayer()), writer);
-        writer.flush();
-        writer.close();
+        if (file != null) {
+            saveNewGame();
+            FileWriter writer = new FileWriter(file.getAbsolutePath());
+            Gson gson = new GsonBuilder().create();
+            gson.toJson(new GameState(map.getCurrentMap(), new Date(System.currentTimeMillis()), new PlayerModel(map.getPlayer())), writer);
+            writer.flush();
+            writer.close();
+        }
     }
 
-    private void saveNewGame(String title){
-        PlayerModel playerModel = new PlayerModel(map.getPlayer());
-        dbManager.updatePlayer(playerModel);
-        GameState gameState = dbManager.saveGameState(map.getCurrentMap(), playerModel);
-        dbManager.addToGameSaves(title, playerModel, gameState);
+    private void saveNewGame(){
+        Date currentDate = new Date(System.currentTimeMillis());
+        dbManager.saveGameState(map.getCurrentMap(), currentDate, new PlayerModel(map.getPlayer()));
     }
 
     private void saveNewPlayer() {
@@ -261,7 +262,7 @@ public class Main extends Application {
         grid.add(nameLabel, 0, 0);
         grid.add(saveButton, 0, 1);
         grid.add(cancelButton,1, 1);
-        saveButton.setOnAction(event -> saveOverWriteAlert(saveInput.getText(), dialog));
+        saveButton.setOnAction(event -> saveOverWriteAlert());
         cancelButton.setOnAction(event -> dialog.close());
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setAlignment(Pos.CENTER);
@@ -273,6 +274,7 @@ public class Main extends Application {
         dialog.setScene(saveScene);
         dialog.showAndWait();
     }
+
 
     private boolean checkIfTitleExists(String savesTitle){
         List<String> allTitles = dbManager.getSaveTitles();
@@ -313,7 +315,6 @@ public class Main extends Application {
     }
 
     private void onBtnPress(Player player) {
-        System.out.print(map.getCurrentMap());
         Item item = map.getPlayer().getCell().getItem();
         if (item != null) {
             player.lootItem(item);
