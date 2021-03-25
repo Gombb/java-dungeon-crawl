@@ -1,6 +1,7 @@
 package com.codecool.dungeoncrawl.dao;
 
 import com.codecool.dungeoncrawl.logic.actors.Player;
+import com.codecool.dungeoncrawl.model.GameSave;
 import com.codecool.dungeoncrawl.model.GameState;
 import com.codecool.dungeoncrawl.model.PlayerModel;
 import org.postgresql.ds.PGSimpleDataSource;
@@ -14,21 +15,34 @@ import java.util.Collections;
 public class GameDatabaseManager {
     private PlayerDao playerDao;
     private GameStateDao gameStateDao;
+    private GameSavesDao gameSavesDao;
 
     public void setup() throws SQLException {
         DataSource dataSource = connect();
         playerDao = new PlayerDaoJdbc(dataSource);
         gameStateDao = new GameStateDaoJdbc(dataSource);
+        gameSavesDao = new GameSavesDaoJdbc(dataSource);
     }
 
-    public void saveGameState(String currentMap, Date currentDate, PlayerModel playerModel) {
+    public void updatePlayer(PlayerModel playerModel){
+        playerDao.update(playerModel);
+    }
+
+    public void addToGameSaves(String title, PlayerModel playerModel, GameState gameState){
+        gameSavesDao.add(new GameSave(title, gameState, playerModel));
+    }
+
+    public GameState saveGameState(String currentMap, PlayerModel playerModel) {
+        Date currentDate = new Date(System.currentTimeMillis());
         GameState gameState = new GameState(currentMap, currentDate, playerModel);
-        gameStateDao.add(gameState);
+        gameState = gameStateDao.add(gameState);
+        return gameState;
     };
 
-    public void savePlayer(Player player) {
+    public PlayerModel savePlayer(Player player) {
         PlayerModel model = new PlayerModel(player);
-        playerDao.add(model);
+        model = playerDao.add(model);
+        return model;
     }
 
     public int getHighestPlayerId() {

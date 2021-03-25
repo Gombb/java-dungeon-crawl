@@ -15,7 +15,7 @@ public class GameStateDaoJdbc implements GameStateDao {
     }
 
     @Override
-    public void add(GameState state) {
+    public GameState add(GameState state) {
         try (Connection conn = dataSource.getConnection()) {
             String sql = "INSERT INTO game_state (player_id, current_map, saved_at) VALUES (?, ?, ?)";
             PreparedStatement statement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -26,6 +26,7 @@ public class GameStateDaoJdbc implements GameStateDao {
             ResultSet resultSet = statement.getGeneratedKeys();
             resultSet.next();
             state.setId(resultSet.getInt(1));
+            return state;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -5,6 +5,7 @@ import com.codecool.dungeoncrawl.logic.Cell;
 import com.codecool.dungeoncrawl.logic.GameMap;
 import com.codecool.dungeoncrawl.logic.MapLoader;
 import com.codecool.dungeoncrawl.logic.actors.Player;
+import com.codecool.dungeoncrawl.model.GameState;
 import com.codecool.dungeoncrawl.model.PlayerModel;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -172,7 +173,6 @@ public class Main extends Application {
     private void exportGame() throws IOException {
         System.out.println("Exported");
         File file = fileChooser.showSaveDialog(primaryStage);
-        saveNewGame();
         FileWriter writer = new FileWriter(file.getAbsolutePath());
         Gson gson = new GsonBuilder().create();
         gson.toJson(new PlayerModel(map.getPlayer()), writer);
@@ -180,9 +180,11 @@ public class Main extends Application {
         writer.close();
     }
 
-    private void saveNewGame(){
-        Date currentDate = new Date(System.currentTimeMillis());
-        dbManager.saveGameState(map.getCurrentMap(), currentDate, new PlayerModel(map.getPlayer()));
+    private void saveNewGame(String title){
+        PlayerModel playerModel = new PlayerModel(map.getPlayer());
+        dbManager.updatePlayer(playerModel);
+        GameState gameState = dbManager.saveGameState(map.getCurrentMap(), playerModel);
+        dbManager.addToGameSaves(title, playerModel, gameState);
     }
 
     private void saveNewPlayer() {
@@ -263,7 +265,7 @@ public class Main extends Application {
         grid.add(nameLabel, 0, 0);
         grid.add(saveButton, 0, 1);
         grid.add(cancelButton,1, 1);
-        saveButton.setOnAction(event -> saveOverWriteAlert());
+        saveButton.setOnAction(event -> saveOverWriteAlert(saveInput.getText(), dialog));
         cancelButton.setOnAction(event -> dialog.close());
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setAlignment(Pos.CENTER);
@@ -276,8 +278,8 @@ public class Main extends Application {
         dialog.showAndWait();
     }
 
-    private void saveOverWriteAlert(){
-        boolean overWrite = true;
+    private void saveOverWriteAlert(String savesTitle, Stage modal){
+        boolean overWrite = false;
         if (overWrite){
             Alert overWriteAlert = new Alert(Alert.AlertType.WARNING);
             overWriteAlert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -292,6 +294,11 @@ public class Main extends Application {
                     System.out.println("NONONO");
                 }
             });
+        }else{
+            saveNewGame(savesTitle);
+            modal.close();
+
+
         }
     }
 
